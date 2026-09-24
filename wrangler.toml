@@ -1,0 +1,8 @@
+name = "vyabloko"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "public"
+
+# База (D1) и хранилище картинок (R2) подключаются кликами в дашборде Cloudflare:
+# Pages → твой проект → Settings → Bindings → Add.
+#   D1 database binding:  Variable name = DB      → база  vyabloko
+#   R2 bucket binding:    Variable name = BUCKET  → бакет vyabloko-images
