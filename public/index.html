@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{ --paper:#F5F4EF; --ink:#17181A; --graphite:#6B6B62; --line:#E4E2D9; --accent:#3B5C4A; --card:#FCFBF7; --cols:3; --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans',system-ui,sans-serif; --font-mono:'Space Mono',monospace; }
+:root{ --paper:#F5F4EF; --ink:#17181A; --graphite:#6B6B62; --line:#E4E2D9; --accent:#3B5C4A; --card:#FCFBF7; --cols:3; --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans',system-ui,sans-serif; --font-mono:'Space Mono',monospace; --tscale:1; }
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100vh; }
@@ -25,6 +25,8 @@ img{ max-width:100%; }
 .brand{ display:flex; align-items:center; gap:11px; cursor:pointer; }
 .brand .mark{ display:inline-flex; align-items:center; font-size:19px; line-height:1; }
 .brand h1{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0; letter-spacing:-.01em; }
+.brandtext{ display:flex; flex-direction:column; }
+.subtitle{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; color:var(--graphite); margin-top:2px; }
 .nav{ display:flex; align-items:center; gap:26px; }
 .navlinks{ display:flex; gap:26px; }
 .nav a{ font-family:var(--font-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--graphite); padding-bottom:2px; border-bottom:1.5px solid transparent; transition:color .2s,border-color .2s; cursor:pointer; }
@@ -35,7 +37,7 @@ img{ max-width:100%; }
 .burger{ display:none; }
 .wrap{ max-width:1240px; margin:0 auto; padding:0 26px; }
 .sec-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding:48px 0 26px; flex-wrap:wrap; }
-.sec-head h2{ font-family:var(--font-display); font-weight:500; font-size:clamp(30px,5vw,52px); margin:0; letter-spacing:-.02em; line-height:1; }
+.sec-head h2{ font-family:var(--font-display); font-weight:500; font-size:calc(clamp(30px,5vw,52px) * var(--tscale)); margin:0; letter-spacing:-.02em; line-height:1; }
 .filters{ display:flex; flex-wrap:wrap; gap:8px; }
 .chip{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:7px 12px; border:1px solid var(--line); background:transparent; color:var(--graphite); transition:all .18s; }
 .chip:hover{ border-color:var(--ink); color:var(--ink); }
@@ -62,8 +64,8 @@ img{ max-width:100%; }
 .about-photo{ width:100%; max-width:300px; aspect-ratio:4/5; object-fit:cover; border:1px solid var(--line); display:block; margin-bottom:24px; background:var(--card); }
 .about-photo.placeholder{ display:flex; align-items:center; justify-content:center; border:1px dashed var(--line); }
 .about-photo.placeholder span{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--graphite); }
-.about .intro{ font-family:var(--font-display); font-size:clamp(20px,2.4vw,27px); line-height:1.38; font-weight:400; letter-spacing:-.01em; }
-.about .body{ margin-top:22px; font-size:16px; color:#33342f; max-width:52ch; white-space:pre-wrap; }
+.about .intro{ font-family:var(--font-display); font-size:calc(clamp(20px,2.4vw,27px) * var(--tscale)); line-height:1.38; font-weight:400; letter-spacing:-.01em; }
+.about .body{ margin-top:22px; font-size:calc(16px * var(--tscale)); color:#33342f; max-width:52ch; white-space:pre-wrap; }
 .about-ig{ display:inline-flex; align-items:center; gap:8px; margin-top:22px; font-family:var(--font-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--graphite); }
 .about-ig svg{ color:var(--accent); }
 .about-ig:hover{ color:var(--accent); }
@@ -71,15 +73,15 @@ img{ max-width:100%; }
 .cv-block h3{ font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--graphite); margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line); }
 .cv-row{ display:grid; grid-template-columns:64px 1fr; gap:14px; padding:6px 0; align-items:baseline; }
 .cv-row .y{ font-family:var(--font-mono); font-size:12px; color:var(--accent); }
-.cv-row .x{ font-size:15px; }
+.cv-row .x{ font-size:calc(15px * var(--tscale)); }
 .contact{ padding:6px 0 90px; max-width:640px; }
-.contact .lead{ font-family:var(--font-display); font-size:clamp(20px,2.6vw,30px); line-height:1.35; margin-bottom:34px; }
+.contact .lead{ font-family:var(--font-display); font-size:calc(clamp(20px,2.6vw,30px) * var(--tscale)); line-height:1.35; margin-bottom:34px; }
 .clist{ display:flex; flex-direction:column; gap:2px; margin-bottom:40px; }
 .crow{ display:flex; align-items:center; gap:14px; padding:16px 0; border-top:1px solid var(--line); }
 .crow:last-child{ border-bottom:1px solid var(--line); }
 .crow .ico{ color:var(--accent); display:flex; }
 .crow .k{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); width:120px; }
-.crow .v{ font-size:16px; }
+.crow .v{ font-size:calc(16px * var(--tscale)); }
 .crow a.v:hover{ color:var(--accent); }
 .news{ display:flex; border:1px solid var(--ink); max-width:440px; }
 .news input{ flex:1; border:none; background:transparent; padding:14px 15px; font-family:inherit; font-size:15px; color:var(--ink); outline:none; }
@@ -255,9 +257,9 @@ function ph(i,w,h){
 function SEED(){
   return {
     settings:{
-      siteName:"Vasily Yablokov", role:"Artist", domain:"vyabloko.art",
+      siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
       labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email" },
-      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"" },
+      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"" },
       about:{ photo:"", photoPos:{x:50,y:50},
         intro:"Hi! I'm Vasily. This is where I keep my work \u2014 what I'm making now, and what has already found its viewers.",
         body:"I work with form, colour and everyday subjects, and I like it best when a piece goes on living in someone's home. If something here speaks to you, write to me.\n\n(This is placeholder text \u2014 replace it from Manage site.)" },
@@ -287,11 +289,11 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg="";
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M";
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
-  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email";
+  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin";
   (d.works||[]).forEach(function(w){
     if(!Array.isArray(w.tags)){ w.tags = w.category ? [w.category] : []; }
     if(w.size==null) w.size="";
@@ -381,7 +383,7 @@ function faviconHref(){
   return "data:image/svg+xml,"+encodeURIComponent(svg);
 }
 function applyFavicon(){ let l=document.getElementById('favicon'); if(!l){ l=document.createElement('link'); l.id='favicon'; l.rel='icon'; document.head.appendChild(l); } l.type='image/svg+xml'; l.href=faviconHref(); }
-function applyTheme(){ const t=(state.data.settings.theme)||{}; const r=document.documentElement; if(t.accent) r.style.setProperty('--accent',t.accent); r.style.setProperty('--cols',String(t.columns||3)); const fp=FONTS[t.font]||FONTS.editorial; r.style.setProperty('--font-display',fp.ds); r.style.setProperty('--font-body',fp.bs); r.style.setProperty('--font-mono',"'Space Mono',monospace"); ensureFonts(fp); applyFavicon(); }
+function applyTheme(){ const t=(state.data.settings.theme)||{}; const r=document.documentElement; if(t.accent) r.style.setProperty('--accent',t.accent); r.style.setProperty('--cols',String(t.columns||3)); const fp=FONTS[t.font]||FONTS.editorial; r.style.setProperty('--font-display',fp.ds); r.style.setProperty('--font-body',fp.bs); r.style.setProperty('--font-mono',"'Space Mono',monospace"); const ts=({S:0.9,M:1,L:1.14,XL:1.3})[t.textSize||'M']||1; r.style.setProperty('--tscale',String(ts)); ensureFonts(fp); applyFavicon(); }
 /* boot */
 async function boot(){
   try{ const doc=await apiGet('/api/data'); state.data=migrate(doc); }catch(e){ state.data=migrate(SEED()); }
@@ -408,7 +410,7 @@ function renderApp(){
       '</div></div>';
   }
   const logo = (s.theme&&s.theme.logo)?('<span class="mark">'+esc(s.theme.logo)+'</span>'):'';
-  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<h1>'+esc(s.siteName)+'</h1></div>'+
+  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1>'+esc(s.siteName)+'</h1>'+(s.subtitle?'<div class="subtitle">'+esc(s.subtitle)+'</div>':'')+'</div></div>'+
     '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+'</div>'+
     '<button class="iconbtn burger" data-act="burger">'+ic("menu",16)+'</button></div></header>';
   if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a></nav>'; }
@@ -422,7 +424,7 @@ function renderApp(){
     '<span class="footright">'+(c.instagram?'<a href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",14)+' @'+esc(c.instagram)+'</a>':'')+
     '<span>'+esc(s.role)+'</span></span></footer>';
   html+=foot;
-  $("#app").innerHTML=html; renderOverlays(); updateStatus();
+  document.title=(state.data.settings.siteName||"Portfolio"); $("#app").innerHTML=html; renderOverlays(); updateStatus();
 }
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
@@ -543,7 +545,7 @@ function tabWorks(){
     h+='<div class="admin-work" data-drag="works" data-i="'+i+'"><span class="grip" draggable="true" data-drag-handle title="Drag to reorder">'+gripIcon(16)+'</span><img src="'+esc(w.image)+'" alt="" />'+
       '<div class="info"><div class="t">'+esc(w.title||"Untitled")+'</div><div class="m">'+esc([materialLine(w),sizeLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></div>'+
       '<div class="acts">'+
-      '<button class="sq" data-act="work-edit" data-id="'+w.id+'">'+ic("pencil",14)+'</button>'+
+      '<button class="sq" data-act="work-move" data-id="'+w.id+'" data-dir="-1" '+(i===0?"disabled":"")+'>'+ic("up",14)+'</button>'+'<button class="sq" data-act="work-move" data-id="'+w.id+'" data-dir="1" '+(i===list.length-1?"disabled":"")+'>'+ic("down",14)+'</button>'+'<button class="sq" data-act="work-edit" data-id="'+w.id+'">'+ic("pencil",14)+'</button>'+
       '<button class="sq" data-act="work-del" data-id="'+w.id+'">'+ic("trash",14)+'</button></div></div>';
   });
   return h;
@@ -702,8 +704,10 @@ function tabSettings(){
   let fonts='<div class="tagwrap">';
   ["editorial","grotesk","classic","garamond","archivo"].forEach(function(k){ fonts+='<button class="tagpick '+((t.font||"editorial")===k?'on':'')+'" data-act="font" data-c="'+k+'">'+esc(fontNames[k])+'</button>'; });
   fonts+='</div>';
+  let tsize='<div class="tagwrap">'; ["S","M","L","XL"].forEach(function(o){ tsize+='<button class="tagpick '+((t.textSize||"M")===o?'on':'')+'" data-act="tsize" data-c="'+o+'">'+o+'</button>'; }); tsize+='</div>';
   const favImg = t.faviconImg ? '<div style="margin-top:8px;display:flex;gap:8px;align-items:center"><img src="'+esc(t.faviconImg)+'" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid var(--line)" /><button class="btn ghost mini" data-act="favicon-pick">Replace image</button><button class="btn ghost mini" data-act="favicon-imgdel">Remove image</button></div>' : '<div style="margin-top:8px"><button class="btn ghost mini" data-act="favicon-pick">'+ic("upload",13)+' Upload favicon image</button></div>';
   return fld("Site name",'<input class="input" data-bind="data.settings.siteName" value="'+esc(s.siteName)+'" />')+
+    fld("Subtitle (under your name)",'<input class="input" data-bind="data.settings.subtitle" value="'+esc(s.subtitle||"")+'" placeholder="Experimental artist from Berlin" />')+
     fld("Tagline / role",'<input class="input" data-bind="data.settings.role" value="'+esc(s.role)+'" placeholder="Artist" />')+
     fld("Domain",'<input class="input" data-bind="data.settings.domain" value="'+esc(s.domain||"vyabloko.art")+'" placeholder="vyabloko.art" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save</button>'+
@@ -718,6 +722,7 @@ function tabSettings(){
     '<div class="eyebrow" style="margin-bottom:12px">Appearance</div>'+
     '<div class="fld"><span class="lab">Accent colour</span>'+sw+'</div>'+
     '<div class="fld"><span class="lab">Fonts</span>'+fonts+'</div>'+
+    '<div class="fld"><span class="lab">Text size (all text blocks)</span>'+tsize+'</div>'+
     '<div class="fld"><span class="lab">Grid columns (desktop)</span>'+cols+'</div>'+
     '<div class="fld"><span class="lab">Email signup on Contact</span><div class="tagwrap">'+signup+'</div></div>'+
     fld("Header symbol (emoji or text \u2014 leave empty to remove)",'<input class="input" data-bind="data.settings.theme.logo" value="'+esc(t.logo||"")+'" placeholder="e.g. \uD83C\uDF4F or V. or empty" style="width:220px" />')+
@@ -731,7 +736,7 @@ function tabSettings(){
     '<div class="eyebrow" style="margin-bottom:12px">Admin password (this device)</div>'+
     fld("New password",'<input class="input" id="newpw" type="text" placeholder="Choose a new password" />')+
     '<button class="btn ghost" data-act="pw-change">Change password</button>'+
-    '<p class="hint">The admin panel is reached at yourdomain/cabinet. This login only hides the panel on your own device \u2014 it is not real security. Your live site changes only when you Export data.json and re-publish it. Keep a copy of your exported data.json as a backup.</p>';
+    '<p class="hint">The admin panel is at yourdomain/cabinet. Changes save to the server automatically and are live for everyone right away. Change the password in Cloudflare \u2192 project \u2192 Settings \u2192 Variables and Secrets.</p>';
 }
 function fld(label, inner){ return '<label class="fld"><span class="lab">'+esc(label)+'</span>'+inner+'</label>'; }
 /* ===== actions ===== */
@@ -796,6 +801,7 @@ document.addEventListener('click', function(e){
     case "cols": { state.data.settings.theme.columns=parseInt(el.getAttribute('data-c'),10); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
     case "toggle-signup": { const t=state.data.settings.theme; t.showSignup=(t.showSignup===false); saveDraft(); rerenderPanelBody(); break; }
     case "font": { state.data.settings.theme.font=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
+    case "tsize": { state.data.settings.theme.textSize=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
     case "favicon-pick": { const f=$("#faviconfile"); if(f) f.click(); break; }
     case "favicon-imgdel": { state.data.settings.theme.faviconImg=""; applyFavicon(); saveDraft(); rerenderPanelBody(); break; }
     case "aboutphoto-pick": { const f=$("#aboutphoto"); if(f) f.click(); break; }
