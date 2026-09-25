@@ -44,7 +44,7 @@ img{ max-width:100%; }
 @media(max-width:900px){ .grid{ column-count:2; } }
 @media(max-width:560px){ .grid{ column-count:1; } }
 .card{ break-inside:avoid; margin-bottom:24px; position:relative; cursor:pointer; background:var(--card); border:1px solid var(--line); animation:rise .55s cubic-bezier(.2,.7,.2,1) both; }
-.card img{ display:block; width:100%; height:auto; }
+.card img{ display:block; width:100%; height:auto; background:var(--card); }
 .card .label{ position:absolute; left:0; right:0; bottom:0; padding:16px 14px 13px; background:linear-gradient(to top, rgba(23,24,26,.86), rgba(23,24,26,0)); color:#F5F4EF; opacity:0; transform:translateY(10px); transition:opacity .28s,transform .28s; }
 .card:hover .label{ opacity:1; transform:none; }
 .card:hover{ border-color:var(--ink); }
@@ -438,7 +438,7 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" loading="lazy" />'+
+      '<img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" loading="lazy"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
       '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
       '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
