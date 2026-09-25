@@ -1,2 +1,2 @@
-/cabinet    /index.html    200
-/cabinet/*  /index.html    200
+/cabinet    /    200
+/cabinet/*  /    200
