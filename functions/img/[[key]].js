@@ -2,8 +2,10 @@ export async function onRequestGet(context) {
   const { request, env, params } = context;
   const key = Array.isArray(params.key) ? params.key.join("/") : params.key;
 
+  // Header-independent cache key (a plain URL string) so even a hard refresh
+  // (Cache-Control: no-cache) is still served from the edge cache, not R2.
+  const cacheKey = new URL(request.url).toString();
   const cache = caches.default;
-  const cacheKey = new Request(new URL(request.url).toString(), request);
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 
