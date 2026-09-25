@@ -65,9 +65,10 @@ export function DEFAULT_DOC() {
     settings: {
       siteName: "Vasily Yablokov",
       role: "Artist",
+      subtitle: "Experimental artist from Berlin",
       domain: "vyabloko.art",
       labels: { work: "Work", about: "About", contact: "Contact", signup: "Get updates by email" },
-      theme: { accent: "#3B5C4A", columns: 3, showSignup: true, font: "editorial", logo: "\uD83C\uDF4F", favicon: "\uD83C\uDF4F", faviconImg: "" },
+      theme: { accent: "#3B5C4A", columns: 3, showSignup: true, textSize: "M", font: "editorial", logo: "\uD83C\uDF4F", favicon: "\uD83C\uDF4F", faviconImg: "" },
       about: {
         photo: "",
         photoPos: { x: 50, y: 50 },
