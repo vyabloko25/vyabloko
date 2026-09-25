@@ -428,7 +428,7 @@ function renderApp(){
 }
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
-  let h='<div class="sec-head"><h2>'+esc(lbl("work","Work"))+'</h2><div class="filters">';
+  let h='<div class="sec-head" style="padding-top:40px"><div class="filters">';
   tagList().forEach(function(c){ h+='<button class="chip '+(state.tag===c?"on":"")+'" data-act="tagf" data-c="'+esc(c)+'">'+esc(c)+'</button>'; });
   h+='</div></div>';
   const list=filtered();
@@ -440,7 +440,7 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" loading="lazy"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
+      '<img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
       '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
       '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
