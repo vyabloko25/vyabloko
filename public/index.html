@@ -392,6 +392,7 @@ async function boot(){
   try{ const ses=await apiGet('/api/session'); state.isAdmin=!!(ses&&ses.auth); }catch(e){}
   if(isCabinet() && !state.isAdmin) state.login=true;
   applyTheme(); renderApp();
+  if(state.isAdmin) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && !w.thumb; })) optimizeThumbs(false); }, 700);
 }
 window.addEventListener('beforeunload', function(e){ if(state.isAdmin && saveStatus!=='saved'){ e.preventDefault(); e.returnValue=''; return ''; } });
 window.addEventListener('hashchange', function(){ if(isCabinet() && !state.isAdmin){ state.login=true; renderOverlays(); } });
@@ -564,7 +565,7 @@ async function startBulk(files){
   async function worker(){
     while(idx<files.length){
       const i=idx++;
-      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],700,0.72); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
+      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],600,0.70); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
       catch(err){ results[i]=null; }
       done++; if(state.bulkLoading) state.bulkLoading.done=done; rerenderPanelBody();
     }
@@ -806,7 +807,7 @@ document.addEventListener('click', function(e){
     case "toggle-signup": { const t=state.data.settings.theme; t.showSignup=(t.showSignup===false); saveDraft(); rerenderPanelBody(); break; }
     case "font": { state.data.settings.theme.font=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
     case "tsize": { state.data.settings.theme.textSize=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
-    case "optimize-thumbs": optimizeThumbs(); break;
+    case "optimize-thumbs": optimizeThumbs(true); break;
     case "favicon-pick": { const f=$("#faviconfile"); if(f) f.click(); break; }
     case "favicon-imgdel": { state.data.settings.theme.faviconImg=""; applyFavicon(); saveDraft(); rerenderPanelBody(); break; }
     case "aboutphoto-pick": { const f=$("#aboutphoto"); if(f) f.click(); break; }
@@ -824,7 +825,7 @@ document.addEventListener('change', async function(e){
   if(e.target && e.target.id==='aboutphoto'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,1400,0.85); const url=await uploadImage(r.dataUrl); state.data.settings.about.photo=url; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); }catch(err){ alert("Upload failed \u2014 check you are logged in."); } return; }
   if(e.target && e.target.id==='imgfile'){
     const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f||!state.editing) return;
-    try{ const full=await compressImage(f,1600,0.82); const thumb=await compressImage(f,700,0.72); state.editing.image=full.dataUrl; state.editing.w=full.w; state.editing.h=full.h; state.editing._up=true; rerenderPanelBody(); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); state.editing.image=fu; state.editing.thumb=tu; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
+    try{ const full=await compressImage(f,1600,0.82); const thumb=await compressImage(f,600,0.70); state.editing.image=full.dataUrl; state.editing.w=full.w; state.editing.h=full.h; state.editing._up=true; rerenderPanelBody(); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); state.editing.image=fu; state.editing.thumb=tu; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
     return;
   }
   if(e.target && e.target.id==='faviconfile'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,128,0.9); state.data.settings.theme.faviconImg=r.dataUrl; applyFavicon(); saveDraft(); rerenderPanelBody(); }catch(err){ alert("Couldn't read that image."); } return; }
@@ -845,15 +846,17 @@ function moveWork(id, dir){
   const idx=works.findIndex(function(x){return x.id===id;}); const sw=idx+dir; if(sw<0||sw>=works.length) return;
   const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); rerenderPanelBody(); renderAppKeepPanel();
 }
-async function optimizeThumbs(){
-  const works=state.data.works||[]; const todo=works.filter(function(w){ return !w.thumb && w.image; });
-  if(!todo.length){ toast("Already optimized"); return; }
-  toast("Optimizing "+todo.length+" image(s)\u2026");
+async function optimizeThumbs(force){
+  const works=state.data.works||[]; const todo=works.filter(function(w){ return w.image && (force || !w.thumb); });
+  if(!todo.length){ if(force) toast("Nothing to optimize"); return; }
+  if(optimizeThumbs._busy) return; optimizeThumbs._busy=true;
+  toast("Optimising previews\u2026 ("+todo.length+")");
   let done=0;
   for(let i=0;i<todo.length;i++){ const w=todo[i];
-    try{ const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,700,0.72); const url=await uploadImage(durl); w.thumb=url; done++; }catch(e){}
+    try{ const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,600,0.70); const url=await uploadImage(durl); w.thumb=url; done++; }catch(e){}
   }
-  saveDraft(); renderAppKeepPanel(); toast("Optimized "+done+" image(s)");
+  optimizeThumbs._busy=false;
+  if(done){ saveDraft(); renderAppKeepPanel(); toast("Previews ready ("+done+")"); }
 }
 function renderAppKeepPanel(){ const open=state.panelOpen; renderApp(); state.panelOpen=open; renderOverlays(); }
 /* ===== drag & drop reordering ===== */
