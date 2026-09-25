@@ -238,6 +238,8 @@ function compressImage(file, maxDim, quality){
     reader.onerror=reject; reader.readAsDataURL(file);
   });
 }
+function loadImageEl(src){ return new Promise(function(res,rej){ const im=new Image(); im.onload=function(){res(im);}; im.onerror=rej; im.src=src; }); }
+function downscaleDataUrl(img, maxDim, q){ let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height; if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; } else if(h>=w && h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; } const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); return c.toDataURL('image/jpeg', q||0.72); }
 /* ---- API layer (Cloudflare backend) ---- */
 async function apiGet(path){ const r=await fetch(path,{credentials:'same-origin',cache:'no-store'}); if(!r.ok) throw new Error('http '+r.status); return r.json(); }
 async function apiSend(path, method, body){ return fetch(path,{method:method,credentials:'same-origin',headers:{'content-type':'application/json'},body: body!=null?JSON.stringify(body):undefined}); }
@@ -440,7 +442,7 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
+      '<img src="'+esc(w.thumb||w.image)+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
       '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
       '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
@@ -494,7 +496,7 @@ function renderOverlays(){
   }
   if(state.login){
     h+='<div class="scrim" data-act="login-close"></div><div class="modal"><h3>Admin login</h3>'+
-      '<p>Enter your password to edit the site. Default is <b>1204</b> \u2014 change it in Manage \u2192 Settings.</p>'+
+      '<p>Enter your password to manage the site.</p>'+
       '<input class="input" id="pw" type="password" placeholder="Password" />'+
       (state.loginErr?'<div class="mono" style="color:#C7452F;font-size:12px;margin-top:8px">Wrong password \u2014 try again.</div>':'')+
       '<div style="display:flex;gap:8px;margin-top:20px"><button class="btn" data-act="login-go">Enter</button><button class="btn ghost" data-act="login-close">Cancel</button></div></div>';
@@ -562,7 +564,7 @@ async function startBulk(files){
   async function worker(){
     while(idx<files.length){
       const i=idx++;
-      try{ const r=await compressImage(files[i]); const url=await uploadImage(r.dataUrl); results[i]={ id:uid(), image:url, w:r.w, h:r.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
+      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],700,0.72); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
       catch(err){ results[i]=null; }
       done++; if(state.bulkLoading) state.bulkLoading.done=done; rerenderPanelBody();
     }
@@ -604,7 +606,7 @@ function saveBulk(){
   const items=state.bulk||[]; if(!items.length){ state.bulk=null; rerenderPanelBody(); return; }
   const works=state.data.works||(state.data.works=[]);
   let base=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0;
-  items.forEach(function(b,k){ works.push({id:b.id,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,tags:(b.tags||[]).slice(),image:b.image,w:b.w,h:b.h,order:base+k}); });
+  items.forEach(function(b,k){ works.push({id:b.id,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",w:b.w,h:b.h,order:base+k}); });
   const n=items.length; state.bulk=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast(n+" works added");
 }
 function tabWorkEditor(){
@@ -733,9 +735,11 @@ function tabSettings(){
       '<p class="hint" style="margin-top:6px">An uploaded image wins over the emoji/letter. Clear both to fall back to your site\u2019s first letter.</p>'+
     '</div>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
-    '<div class="eyebrow" style="margin-bottom:12px">Admin password (this device)</div>'+
-    fld("New password",'<input class="input" id="newpw" type="text" placeholder="Choose a new password" />')+
-    '<button class="btn ghost" data-act="pw-change">Change password</button>'+
+    '<div class="eyebrow" style="margin-bottom:12px">Performance</div>'+
+    '<button class="btn ghost" data-act="optimize-thumbs">Optimize image loading</button>'+
+    '<p class="hint" style="margin-top:6px">Creates small preview versions of existing works so the grid loads fast. New uploads get this automatically.</p>'+
+    '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
+    '<div class="eyebrow" style="margin-bottom:12px">Admin access</div>'+
     '<p class="hint">The admin panel is at yourdomain/cabinet. Changes save to the server automatically and are live for everyone right away. Change the password in Cloudflare \u2192 project \u2192 Settings \u2192 Variables and Secrets.</p>';
 }
 function fld(label, inner){ return '<label class="fld"><span class="lab">'+esc(label)+'</span>'+inner+'</label>'; }
@@ -802,6 +806,7 @@ document.addEventListener('click', function(e){
     case "toggle-signup": { const t=state.data.settings.theme; t.showSignup=(t.showSignup===false); saveDraft(); rerenderPanelBody(); break; }
     case "font": { state.data.settings.theme.font=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
     case "tsize": { state.data.settings.theme.textSize=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
+    case "optimize-thumbs": optimizeThumbs(); break;
     case "favicon-pick": { const f=$("#faviconfile"); if(f) f.click(); break; }
     case "favicon-imgdel": { state.data.settings.theme.faviconImg=""; applyFavicon(); saveDraft(); rerenderPanelBody(); break; }
     case "aboutphoto-pick": { const f=$("#aboutphoto"); if(f) f.click(); break; }
@@ -819,7 +824,7 @@ document.addEventListener('change', async function(e){
   if(e.target && e.target.id==='aboutphoto'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,1400,0.85); const url=await uploadImage(r.dataUrl); state.data.settings.about.photo=url; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); }catch(err){ alert("Upload failed \u2014 check you are logged in."); } return; }
   if(e.target && e.target.id==='imgfile'){
     const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f||!state.editing) return;
-    try{ const r=await compressImage(f); state.editing.image=r.dataUrl; state.editing.w=r.w; state.editing.h=r.h; state.editing._up=true; rerenderPanelBody(); const url=await uploadImage(r.dataUrl); state.editing.image=url; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
+    try{ const full=await compressImage(f,1600,0.82); const thumb=await compressImage(f,700,0.72); state.editing.image=full.dataUrl; state.editing.w=full.w; state.editing.h=full.h; state.editing._up=true; rerenderPanelBody(); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); state.editing.image=fu; state.editing.thumb=tu; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
     return;
   }
   if(e.target && e.target.id==='faviconfile'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,128,0.9); state.data.settings.theme.faviconImg=r.dataUrl; applyFavicon(); saveDraft(); rerenderPanelBody(); }catch(err){ alert("Couldn't read that image."); } return; }
@@ -830,7 +835,7 @@ document.addEventListener('keydown', function(e){ if(state.lightbox===null) retu
 function saveWork(){
   const e=state.editing; if(!e) return; if(!e.image){ alert("Add an image first."); return; }
   const works=state.data.works||(state.data.works=[]);
-  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,tags:(e.tags||[]).slice(),image:e.image,w:e.w,h:e.h};
+  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,tags:(e.tags||[]).slice(),image:e.image,thumb:e.thumb||"",w:e.w,h:e.h};
   const idx=works.findIndex(function(x){return x.id===e.id;});
   if(idx>-1){ clean.order=works[idx].order; works[idx]=clean; } else { clean.order=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0; works.push(clean); }
   state.editing=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast("Work saved");
@@ -839,6 +844,16 @@ function moveWork(id, dir){
   const works=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
   const idx=works.findIndex(function(x){return x.id===id;}); const sw=idx+dir; if(sw<0||sw>=works.length) return;
   const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); rerenderPanelBody(); renderAppKeepPanel();
+}
+async function optimizeThumbs(){
+  const works=state.data.works||[]; const todo=works.filter(function(w){ return !w.thumb && w.image; });
+  if(!todo.length){ toast("Already optimized"); return; }
+  toast("Optimizing "+todo.length+" image(s)\u2026");
+  let done=0;
+  for(let i=0;i<todo.length;i++){ const w=todo[i];
+    try{ const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,700,0.72); const url=await uploadImage(durl); w.thumb=url; done++; }catch(e){}
+  }
+  saveDraft(); renderAppKeepPanel(); toast("Optimized "+done+" image(s)");
 }
 function renderAppKeepPanel(){ const open=state.panelOpen; renderApp(); state.panelOpen=open; renderOverlays(); }
 /* ===== drag & drop reordering ===== */
