@@ -56,7 +56,8 @@ function cookie(req, name) {
 }
 
 export async function requireAuth(req, env) {
-  return await verifyToken(env.AUTH_SECRET || "dev-secret", cookie(req, "session"));
+  if (!env.AUTH_SECRET) return false;
+  return await verifyToken(env.AUTH_SECRET, cookie(req, "session"));
 }
 
 // Default document returned when the database is still empty.
