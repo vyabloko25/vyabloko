@@ -47,6 +47,9 @@ img{ max-width:100%; }
 @media(max-width:560px){ .grid{ column-count:1; } }
 .card{ break-inside:avoid; margin-bottom:24px; position:relative; cursor:pointer; background:var(--card); border:1px solid var(--line); animation:rise .55s cubic-bezier(.2,.7,.2,1) both; }
 .card img{ display:block; width:100%; height:auto; background:var(--card); }
+.card img.gimg{ opacity:0; transition:opacity .4s ease; }
+.card img.gimg.ld{ opacity:1; }
+@media(prefers-reduced-motion:reduce){ .card img.gimg{ opacity:1; transition:none; } }
 .card .label{ position:absolute; left:0; right:0; bottom:0; padding:16px 14px 13px; background:linear-gradient(to top, rgba(23,24,26,.86), rgba(23,24,26,0)); color:#F5F4EF; opacity:0; transform:translateY(10px); transition:opacity .28s,transform .28s; }
 .card:hover .label{ opacity:1; transform:none; }
 .card:hover{ border-color:var(--ink); }
@@ -218,7 +221,7 @@ function uid(){ return 'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)
 function toggleTag(arr, val){ const i=arr.indexOf(val); if(i>-1) arr.splice(i,1); else arr.push(val); }
 function cleanName(name){ var s=String(name||"").replace(/\.[^.]+$/,""); s=s.replace(/_+/g," "); s=s.replace(/^\s*\d{1,3}\s*[-.)]\s+/,""); s=s.replace(/\s+/g," ").trim(); return s; }
 function igUrl(c){ return (c && (c.instagramUrl || (c.instagram && ('https://instagram.com/'+c.instagram)))) || '#'; }
-function imgURL(u){ if(!u) return u; const b=(state.data&&state.data.settings&&state.data.settings.theme&&state.data.settings.theme.imgBase)||''; if(b && u.indexOf('/img/')===0){ return b.replace(/\/+$/,'')+u.slice(4); } return u; }
+function imgSrc(u, kind){ if(!u) return u; const t=(state.data&&state.data.settings&&state.data.settings.theme)||{}; const b=(t.imgBase||'').replace(/\/+$/,''); const isImg=u.indexOf('/img/')===0; const abs=(b&&isImg)?(b+u.slice(4)):u; if(t.imgResize && b && isImg){ const w=kind==='full'?1600:(kind==='about'?900:640); const q=kind==='full'?85:80; return '/cdn-cgi/image/width='+w+',quality='+q+',format=auto/'+abs; } return abs; }
 function materialLine(w){ const m=(w.medium||"").trim(), s=(w.support||"").trim(); if(m&&s) return m+" on "+s; return m||s||""; }
 function sizeLine(w){ const h=(w.height!=null&&w.height!=="")?w.height:"", wd=(w.width!=null&&w.width!=="")?w.width:""; if(h!==""&&wd!=="") return h+" \u00D7 "+wd+" cm"; if(h!=="") return h+" cm"; if(wd!=="") return wd+" cm"; return ""; }
 function lbl(k,d){ const L=(state.data&&state.data.settings&&state.data.settings.labels)||{}; return (L[k]!=null&&L[k]!=="")?L[k]:d; }
@@ -263,7 +266,7 @@ function SEED(){
     settings:{
       siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
       labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email" },
-      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"" },
+      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"", imgResize:false },
       about:{ photo:"", photoPos:{x:50,y:50},
         intro:"Hi! I'm Vasily. This is where I keep my work \u2014 what I'm making now, and what has already found its viewers.",
         body:"I work with form, colour and everyday subjects, and I like it best when a piece goes on living in someone's home. If something here speaks to you, write to me.\n\n(This is placeholder text \u2014 replace it from Manage site.)" },
@@ -293,7 +296,7 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase="";
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false;
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
@@ -394,7 +397,7 @@ async function boot(){
   try{ const ses=await apiGet('/api/session'); state.isAdmin=!!(ses&&ses.auth); }catch(e){}
   if(isCabinet() && !state.isAdmin) state.login=true;
   applyTheme(); renderApp();
-  if(state.isAdmin) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && !w.thumb; })) optimizeThumbs(false); }, 700);
+  if(state.isAdmin && !(state.data.settings.theme&&state.data.settings.theme.imgResize)) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && !w.thumb; })) optimizeThumbs(false); }, 700);
 }
 window.addEventListener('beforeunload', function(e){ if(state.isAdmin && saveStatus!=='saved'){ e.preventDefault(); e.returnValue=''; return ''; } });
 window.addEventListener('hashchange', function(){ if(isCabinet() && !state.isAdmin){ state.login=true; renderOverlays(); } });
@@ -445,7 +448,7 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img src="'+esc(imgURL(w.thumb||w.image))+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
+      '<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc(w.title)+'" loading="'+(i<6?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
       '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
       '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
@@ -460,7 +463,7 @@ function cvBlock(title, rows){
 function viewAbout(){
   const s=state.data.settings, a=s.about, cv=s.cv, c=s.contact||{};
   const pos=a.photoPos||{x:50,y:50}; const op=(pos.x!=null?pos.x:50)+"% "+(pos.y!=null?pos.y:50)+"%";
-  const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgURL(a.photo))+'" alt="'+esc(s.siteName)+'" />'
+  const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgSrc(a.photo,"about"))+'" alt="'+esc(s.siteName)+'" />'
     : '<div class="about-photo placeholder"><span>Photo</span></div>';
   const iglink = c.instagram ? '<a class="about-ig" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",16)+' @'+esc(c.instagram)+'</a>' : '';
   return '<div class="sec-head"><h2>'+esc(lbl("about","About"))+'</h2></div><div class="about"><div>'+
@@ -493,7 +496,7 @@ function renderOverlays(){
       h+='<div class="lb" data-act="lb-close"><button class="lb-x" data-act="lb-close">'+ic("x",18)+'</button>';
       if(list.length>1){ h+='<button class="lb-nav lb-prev" data-act="lb-prev">'+ic("cl",22)+'</button><button class="lb-nav lb-next" data-act="lb-next">'+ic("cr",22)+'</button>'; }
       const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join("  \u00B7  ");
-      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(imgURL(w.image))+'" alt="'+esc(w.title)+'" />'+
+      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(imgSrc(w.image,"full"))+'" alt="'+esc(w.title)+'" />'+
         '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div></div></div></div>';
     }
   }
@@ -614,7 +617,7 @@ function saveBulk(){
 }
 function tabWorkEditor(){
   const e=state.editing;
-  const preview=e.image?'<img src="'+esc(imgURL(e.image))+'" alt="" style="max-height:180px;max-width:100%;border:1px solid var(--line)" />':(ic("upload",22)+'<span>Click to upload an image</span>');
+  const preview=e.image?'<img src="'+esc(imgSrc(e.image,"grid"))+'" alt="" style="max-height:180px;max-width:100%;border:1px solid var(--line)" />':(ic("upload",22)+'<span>Click to upload an image</span>');
   return '<button class="btn ghost mini" style="margin-bottom:16px" data-act="work-cancel">'+ic("cl",13)+' Back</button>'+
     '<div class="drop" data-act="pick-image">'+preview+'</div>'+
     (e.image?'<button class="btn ghost mini" style="margin:10px 0 18px" data-act="pick-image">Replace image</button>':'')+
@@ -671,7 +674,7 @@ function tabAbout(){
   const pos=a.photoPos||{x:50,y:50}; const op=(pos.x!=null?pos.x:50)+"% "+(pos.y!=null?pos.y:50)+"%";
   const photoBlock = '<div class="fld"><span class="lab">About photo</span>'+
     (a.photo
-      ? '<div style="width:150px;height:188px;overflow:hidden;border:1px solid var(--line)"><img id="aboutprev" src="'+esc(imgURL(a.photo))+'" alt="" style="width:100%;height:100%;object-fit:cover;object-position:'+op+'" /></div>'+
+      ? '<div style="width:150px;height:188px;overflow:hidden;border:1px solid var(--line)"><img id="aboutprev" src="'+esc(imgSrc(a.photo,"about"))+'" alt="" style="width:100%;height:100%;object-fit:cover;object-position:'+op+'" /></div>'+
         '<div style="margin-top:8px;display:flex;gap:8px"><button class="btn ghost mini" data-act="aboutphoto-pick">Replace</button><button class="btn ghost mini" data-act="aboutphoto-del">Remove</button></div>'+
         '<div style="margin-top:12px"><span class="lab">Photo position (move the focal point)</span>'+
           '<div style="display:flex;gap:14px;align-items:center;font-family:var(--font-mono);font-size:11px;color:var(--graphite)">'+
@@ -738,11 +741,10 @@ function tabSettings(){
       '<p class="hint" style="margin-top:6px">An uploaded image wins over the emoji/letter. Clear both to fall back to your site\u2019s first letter.</p>'+
     '</div>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
-    '<div class="eyebrow" style="margin-bottom:12px">Performance</div>'+
-    fld("Image domain (advanced \u2014 serve images from R2 CDN)",'<input class="input" data-bind="data.settings.theme.imgBase" value="'+esc((s.theme&&s.theme.imgBase)||"")+'" placeholder="https://img.vyabloko.art" />')+
-    '<p class="hint" style="margin:-8px 0 14px">Leave empty to serve images through the app. If you connect the R2 bucket to a domain (e.g. img.vyabloko.art), paste it here \u2014 images then load straight from Cloudflare\u2019s CDN (fastest).</p>'+
-    '<button class="btn ghost" data-act="optimize-thumbs">Optimize image loading</button>'+
-    '<p class="hint" style="margin-top:6px">Creates small preview versions of existing works so the grid loads fast. New uploads get this automatically.</p>'+
+    '<div class="eyebrow" style="margin-bottom:12px">Images</div>'+
+    fld("Image domain (from R2)",'<input class="input" data-bind="data.settings.theme.imgBase" value="'+esc((s.theme&&s.theme.imgBase)||"")+'" placeholder="https://img.vyabloko.art" />')+
+    '<div class="fld"><span class="lab">Fast images (Cloudflare auto-resize)</span><div class="tagwrap"><button class="tagpick '+((s.theme&&s.theme.imgResize)?'on':'')+'" data-act="toggle-resize">'+((s.theme&&s.theme.imgResize)?'On':'Off')+'</button></div></div>'+
+    '<p class="hint" style="margin:-6px 0 14px">Turn On after enabling Transformations in Cloudflare. Images are then resized and converted to WebP on the fly \u2014 crisp, light and automatic for all works.</p>'+
     '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
     '<div class="eyebrow" style="margin-bottom:12px">Admin access</div>'+
     '<p class="hint">The admin panel is at yourdomain/cabinet. Changes save to the server automatically and are live for everyone right away. Change the password in Cloudflare \u2192 project \u2192 Settings \u2192 Variables and Secrets.</p>';
@@ -811,6 +813,7 @@ document.addEventListener('click', function(e){
     case "toggle-signup": { const t=state.data.settings.theme; t.showSignup=(t.showSignup===false); saveDraft(); rerenderPanelBody(); break; }
     case "font": { state.data.settings.theme.font=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
     case "tsize": { state.data.settings.theme.textSize=el.getAttribute('data-c'); applyTheme(); saveDraft(); renderAppKeepPanel(); break; }
+    case "toggle-resize": { const th=state.data.settings.theme; th.imgResize=!th.imgResize; saveDraft(); renderAppKeepPanel(); break; }
     case "optimize-thumbs": optimizeThumbs(true); break;
     case "favicon-pick": { const f=$("#faviconfile"); if(f) f.click(); break; }
     case "favicon-imgdel": { state.data.settings.theme.faviconImg=""; applyFavicon(); saveDraft(); rerenderPanelBody(); break; }
