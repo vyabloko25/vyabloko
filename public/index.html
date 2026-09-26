@@ -4,13 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Vasily Yablokov — Artist</title>
-<meta name="description" content="Vasily Yablokov — artist portfolio. Paintings, drawings, prints, ceramics and public work." />
+<meta name="description" content="Vasily Yablokov — Experimental artist from Berlin." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Vasily Yablokov" />
+<meta property="og:description" content="Experimental artist from Berlin" />
+<meta property="og:image" content="https://img.vyabloko.art/cover.jpg" />
+<meta property="og:url" content="https://vyabloko.art" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Vasily Yablokov" />
+<meta name="twitter:description" content="Experimental artist from Berlin" />
+<meta name="twitter:image" content="https://img.vyabloko.art/cover.jpg" />
 <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Ctext%20x%3D%2716%27%20y%3D%2725%27%20font-size%3D%2727%27%20text-anchor%3D%27middle%27%3E%F0%9F%8D%8F%3C%2Ftext%3E%3C%2Fsvg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{ --paper:#F5F4EF; --ink:#17181A; --graphite:#6B6B62; --line:#E4E2D9; --accent:#3B5C4A; --card:#FCFBF7; --cols:3; --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans',system-ui,sans-serif; --font-mono:'Space Mono',monospace; --tscale:1; }
+:root{ --paper:#F7F3EA; --ink:#1A1A1C; --graphite:#6E6E66; --line:#E7E2D6; --accent:#E24A6A; --card:#FFFFFF; --cols:3; --c1:#E24A6A; --c2:#F2B33A; --c3:#7FB03A; --c4:#2F86B0; --c5:#D8412F; --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans',system-ui,sans-serif; --font-mono:'Space Mono',monospace; --tscale:1; }
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{ background:var(--paper); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100vh; }
@@ -41,18 +50,23 @@ img{ max-width:100%; }
 .filters{ display:flex; flex-wrap:wrap; gap:8px; }
 .chip{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:7px 12px; border:1px solid var(--line); background:transparent; color:var(--graphite); transition:all .18s; }
 .chip:hover{ border-color:var(--ink); color:var(--ink); }
-.chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.chip.on{ background:var(--accent); color:#fff; border-color:var(--accent); }
 .grid{ display:grid; grid-template-columns:repeat(var(--cols,3),1fr); gap:24px; align-items:start; padding:8px 0 60px; }
 @media(max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
 @media(max-width:560px){ .grid{ grid-template-columns:1fr; } }
-.card{ position:relative; cursor:pointer; background:var(--card); border:1px solid var(--line); animation:rise .5s cubic-bezier(.2,.7,.2,1) both; }
+.card{ position:relative; cursor:pointer; animation:rise .5s cubic-bezier(.2,.7,.2,1) both; }
+.card .card-img{ overflow:hidden; background:var(--card); }
+.card .cap{ padding:12px 2px 0; }
+.card .cap .ct{ font-family:var(--font-display); font-weight:500; font-size:calc(16px * var(--tscale)); line-height:1.25; }
+.card .cap .cm{ font-family:var(--font-mono); font-size:11px; letter-spacing:.03em; color:var(--graphite); margin-top:3px; }
 .card img{ display:block; width:100%; height:auto; background:var(--card); }
-.card img.gimg{ opacity:0; transition:opacity .3s ease; }
+.card img.gimg{ opacity:0; transition:opacity .3s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
 .card img.gimg.ld{ opacity:1; }
 @media(prefers-reduced-motion:reduce){ .card img.gimg{ opacity:1; transition:none; } }
 .card .label{ position:absolute; left:0; right:0; bottom:0; padding:16px 14px 13px; background:linear-gradient(to top, rgba(23,24,26,.86), rgba(23,24,26,0)); color:#F5F4EF; opacity:0; transform:translateY(10px); transition:opacity .28s,transform .28s; }
 .card:hover .label{ opacity:1; transform:none; }
-.card:hover{ border-color:var(--ink); }
+.card:hover .card-img{ box-shadow:0 12px 34px rgba(23,24,26,.15); }
+.card:hover img.gimg{ transform:scale(1.05); }
 .card.can-drag{ cursor:grab; }
 .card.can-drag:active{ cursor:grabbing; }
 .card.dragging{ opacity:.4; }
@@ -68,7 +82,10 @@ img{ max-width:100%; }
 .about-photo{ width:100%; max-width:300px; aspect-ratio:4/5; object-fit:cover; border:1px solid var(--line); display:block; margin-bottom:24px; background:var(--card); }
 .about-photo.placeholder{ display:flex; align-items:center; justify-content:center; border:1px dashed var(--line); }
 .about-photo.placeholder span{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--graphite); }
-.about .intro{ font-family:var(--font-display); font-size:calc(clamp(20px,2.4vw,27px) * var(--tscale)); line-height:1.38; font-weight:400; letter-spacing:-.01em; }
+.about-wrap{ position:relative; overflow:hidden; }
+.about-map{ position:absolute; inset:-12% -6%; color:var(--accent); opacity:.08; z-index:0; pointer-events:none; }
+.about-wrap .about{ position:relative; z-index:1; }
+.about-statement{ font-family:var(--font-body); font-size:calc(16px * var(--tscale)); line-height:1.6; max-width:56ch; color:#2b2c28; }
 .about .body{ margin-top:22px; font-size:calc(16px * var(--tscale)); color:#33342f; max-width:52ch; white-space:pre-wrap; }
 .about-ig{ display:inline-flex; align-items:center; gap:8px; margin-top:22px; font-family:var(--font-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--graphite); }
 .about-ig svg{ color:var(--accent); }
@@ -182,7 +199,48 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chip:focus-visible{ ou
   .mobile-nav{ display:flex; flex-direction:column; gap:2px; padding:10px 26px 16px; border-bottom:1px solid var(--line); background:var(--paper); }
   .mobile-nav a{ font-family:var(--font-mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em; padding:8px 0; color:var(--graphite); cursor:pointer; }
 }
+.lb-actions{ display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+.lb-btn{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:10px 16px; background:var(--accent); color:#fff; border:1px solid var(--accent); cursor:pointer; }
+.lb-btn.ghost{ background:transparent; color:#fff; border-color:rgba(255,255,255,.55); }
+.lb-btn:hover{ opacity:.9; }
+[data-edit][contenteditable="true"]{ outline:1px dashed transparent; outline-offset:3px; border-radius:2px; cursor:text; transition:outline-color .15s; }
+[data-edit][contenteditable="true"]:hover{ outline-color:var(--line); }
+[data-edit][contenteditable="true"]:focus{ outline:1px solid var(--accent); }
+.services{ padding:6px 0 90px; }
+.svc-intro{ font-family:var(--font-display); font-size:calc(clamp(22px,3vw,34px) * var(--tscale)); line-height:1.3; max-width:22ch; margin:0 0 42px; letter-spacing:-.01em; }
+.svc-list{ display:grid; grid-template-columns:1fr 1fr; gap:32px 54px; margin-bottom:56px; }
+@media(max-width:700px){ .svc-list{ grid-template-columns:1fr; } }
+.svc-item h3{ font-family:var(--font-display); font-weight:500; font-size:calc(21px * var(--tscale)); margin:0 0 8px; }
+.svc-item p{ margin:0; font-size:calc(15px * var(--tscale)); color:#33342f; max-width:40ch; }
+.svc-form{ border-top:1px solid var(--line); padding-top:34px; max-width:560px; }
+.svc-form .fh{ font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--graphite); margin-bottom:22px; }
+.uline{ width:100%; border:none; border-bottom:1px solid var(--line); background:transparent; padding:10px 2px; font-family:inherit; font-size:16px; color:var(--ink); outline:none; margin-bottom:18px; }
+.uline:focus{ border-color:var(--accent); }
+textarea.uline{ resize:vertical; min-height:72px; }
+.svc-send{ background:none; border:none; padding:0 0 2px; font-family:var(--font-mono); font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); border-bottom:2px solid var(--accent); cursor:pointer; }
+.svc-send:hover{ color:var(--accent); }
 @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition:none!important; } }
+
+/* indie / rounded */
+.card-img{ border-radius:16px; }
+.card img{ border-radius:16px; }
+.card .cap .ct{ letter-spacing:-.01em; }
+.btn,.lb-btn,.chip,.tagpick,.toast{ border-radius:999px; }
+.chip{ font-weight:500; }
+.input,textarea.input,select.input{ border-radius:12px; }
+.sq{ border-radius:9px; }
+.iconbtn{ border-radius:10px; }
+.lb img{ border-radius:14px; }
+.modal{ border-radius:18px; }
+.about-photo{ border-radius:18px; }
+.news{ border-radius:999px; }
+.news input{ padding-left:20px; }
+.news button{ border-radius:0 999px 999px 0; }
+.uline{ border-radius:0; }
+.svc-send{ border-radius:0; }
+.panel{ border-top-left-radius:18px; border-bottom-left-radius:18px; }
+.about-map{ opacity:.10; }
+.sec-head h2{ letter-spacing:-.02em; }
 </style>
 </head>
 <body>
@@ -215,6 +273,17 @@ function appleMark(s){ s=s||19; return '<svg width="'+s+'" height="'+s+'" viewBo
 function gripIcon(s){ s=s||16; return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>'; }
 /* helpers */
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ed(path,multi){ return state.isAdmin ? (' data-edit="'+path+'" contenteditable="true" spellcheck="false"'+(multi?' data-multi="1"':'')) : ''; }
+function contourSVG(){ var e=""; for(var i=1;i<=11;i++){ e+='<ellipse cx="28%" cy="34%" rx="'+(i*7)+'%" ry="'+(i*5)+'%"/>'; } for(var j=1;j<=11;j++){ e+='<ellipse cx="80%" cy="74%" rx="'+(j*6)+'%" ry="'+(j*8)+'%"/>'; } return '<svg width="100%" height="100%" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1">'+e+'</svg>'; }
+var ABOUT_TEXT={intro:`I'm Vasily. This is a selection of my projects from 2025 onward — recent work, experiments, and things I'm still developing.`,body:`I paint each work in a single session. The light belongs to that particular moment, and so does my own state while I'm painting. If there is a person in front of me, their mood becomes part of it too. Coming back the next day would mean seeing and painting something different.
+
+I studied cartography at university, and it still shapes the way I see and paint. One of the basic principles of cartography is generalisation: a map doesn't reproduce reality in all its complexity. It selects, groups and simplifies what is there. A road map, a geological map and a vegetation map can all describe the same place, but each shows a different version of it.
+
+I use the same principle in painting. I look at what is in front of me and reduce it to larger shapes and areas of colour. Light and shadow help me decide what belongs together and what needs to be separated. A person can merge with the background; objects and space can become part of the same shape.
+
+My painting comes from expressionism, and I experiment a lot with colour. I'm interested in colours that aren't immediately obvious — the shades hidden within light and shadow rather than the colours we expect things to be.
+
+In this sense, every painting is a kind of map: a generalisation of what I saw at one particular moment.`};
 function $(sel,root){ return (root||document).querySelector(sel); }
 function setByPath(root, path, value){ const parts=path.split('.'); let o=root; for(let i=0;i<parts.length-1;i++){ o=o[parts[i]]; } o[parts[parts.length-1]]=value; }
 function uid(){ return 'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
@@ -249,7 +318,7 @@ function downscaleDataUrl(img, maxDim, q){ let w=img.naturalWidth||img.width, h=
 /* ---- API layer (Cloudflare backend) ---- */
 async function apiGet(path){ const r=await fetch(path,{credentials:'same-origin',cache:'no-store'}); if(!r.ok) throw new Error('http '+r.status); return r.json(); }
 async function apiSend(path, method, body){ return fetch(path,{method:method,credentials:'same-origin',headers:{'content-type':'application/json'},body: body!=null?JSON.stringify(body):undefined}); }
-async function uploadImage(dataUrl){ const r=await apiSend('/api/upload','POST',{dataUrl:dataUrl}); if(r.status===401) throw new Error('auth'); if(!r.ok) throw new Error('upload'); const j=await r.json(); return j.url; }
+async function uploadImage(dataUrl, key){ const r=await apiSend('/api/upload','POST',{dataUrl:dataUrl, key:key}); if(r.status===401) throw new Error('auth'); if(!r.ok) throw new Error('upload'); const j=await r.json(); return j.url; }
 /* seed */
 function ph(i,w,h){
   const PAL=["#3B5C4A","#E8E4D8","#17181A","#C7452F","#8A8F7A","#DFA23A"];
@@ -266,7 +335,7 @@ function SEED(){
   return {
     settings:{
       siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
-      labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email", services:"Services" },
+      labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email", services:"Commissions" },
       services:{ intro:"I take commissions and give lessons \u2014 tell me what you have in mind.", items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}] },
       theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"", imgResize:false },
       about:{ photo:"", photoPos:{x:50,y:50},
@@ -298,11 +367,11 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false;
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false; if(s.theme.coverFrom==null) s.theme.coverFrom=""; if(!s.theme.styleV || s.theme.styleV<2){ if(!s.theme.accent || s.theme.accent==="#3B5C4A") s.theme.accent="#E5473C"; s.theme.styleV=2; } if(s.theme.styleV<3){ if(!s.theme.accent || s.theme.accent==="#3B5C4A" || s.theme.accent==="#E5473C") s.theme.accent="#E24A6A"; s.theme.styleV=3; } if(!s.aboutV || s.aboutV<3){ if(!s.about) s.about={photoPos:{x:50,y:50},photo:""}; s.about.intro=""; s.about.body=ABOUT_TEXT.intro+"\n\n"+ABOUT_TEXT.body; s.aboutV=3; }
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
-  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null) s.labels.services="Services"; if(!s.services) s.services={intro:"I take commissions and give lessons \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}]};
+  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null||s.labels.services==="Services") s.labels.services="Commissions"; if(!s.services) s.services={intro:"I take commissions and give lessons \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}]};
   (d.works||[]).forEach(function(w){
     if(!Array.isArray(w.tags)){ w.tags = w.category ? [w.category] : []; }
     if(w.size==null) w.size="";
@@ -326,7 +395,7 @@ const state = {
   data:null, view:"work", tag:"All", mobileNav:false,
   isAdmin:false, panelOpen:false, panelTab:"works",
   editing:null, bulk:null, bulkLoading:null, lightbox:null,
-  login:false, loginErr:false, news:false, publish:false, orderSent:false, orders:null
+  login:false, loginErr:false, news:false, publish:false, orderSent:false, orders:null, buy:null, subscribers:null
 };
 /* ---- durable draft storage: IndexedDB (large quota) with save status ---- */
 var idb=null;
@@ -365,6 +434,7 @@ function updatePubInfo(){ const el=document.getElementById('pubinfo'); if(!el) r
 function password(){ return lsGet(LS_PW) || "1204"; }
 function isCabinet(){ const p=location.pathname.replace(/\/+$/,''); return location.hash.replace('#','').toLowerCase()==='cabinet' || p.toLowerCase().indexOf('/cabinet')>-1; }
 var FONTS={
+  rounded:{d:"Quicksand",b:"Nunito Sans",ds:"'Quicksand',system-ui,sans-serif",bs:"'Nunito Sans',system-ui,sans-serif"},
   editorial:{d:"Fraunces",b:"Instrument Sans",ds:"'Fraunces',Georgia,serif",bs:"'Instrument Sans',system-ui,sans-serif"},
   grotesk:{d:"Space Grotesk",b:"Inter",ds:"'Space Grotesk',system-ui,sans-serif",bs:"'Inter',system-ui,sans-serif"},
   classic:{d:"Playfair Display",b:"Source Sans 3",ds:"'Playfair Display',Georgia,serif",bs:"'Source Sans 3',system-ui,sans-serif"},
@@ -399,7 +469,9 @@ async function boot(){
   try{ const ses=await apiGet('/api/session'); state.isAdmin=!!(ses&&ses.auth); }catch(e){}
   if(isCabinet() && !state.isAdmin) state.login=true;
   applyTheme(); renderApp();
+  if(state.isAdmin) saveDraft();
   if(state.isAdmin && !(state.data.settings.theme&&state.data.settings.theme.imgResize)) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && (!w.thumb || w.thumbV!==THUMB_V); })) optimizeThumbs(false); }, 700);
+  if(state.isAdmin) setTimeout(function(){ ensureCover(); }, 1600);
 }
 window.addEventListener('beforeunload', function(e){ if(state.isAdmin && saveStatus!=='saved'){ e.preventDefault(); e.returnValue=''; return ''; } });
 window.addEventListener('hashchange', function(){ if(isCabinet() && !state.isAdmin){ state.login=true; renderOverlays(); } });
@@ -420,10 +492,10 @@ function renderApp(){
       '</div></div>';
   }
   const logo = (s.theme&&s.theme.logo)?('<span class="mark">'+esc(s.theme.logo)+'</span>'):'';
-  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1>'+esc(s.siteName)+'</h1>'+(s.subtitle?'<div class="subtitle">'+esc(s.subtitle)+'</div>':'')+'</div></div>'+
-    '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+navlink("services",lbl("services","Services"))+'</div>'+
+  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1'+ed('settings.siteName')+'>'+esc(s.siteName)+'</h1>'+((s.subtitle||state.isAdmin)?'<div class="subtitle"'+ed('settings.subtitle')+'>'+esc(s.subtitle||'')+'</div>':'')+'</div></div>'+
+    '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+navlink("services",lbl("services","Commissions"))+'</div>'+
     '<button class="iconbtn burger" data-act="burger">'+ic("menu",16)+'</button></div></header>';
-  if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a><a data-act="go" data-v="services">'+esc(lbl("services","Services"))+'</a></nav>'; }
+  if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a><a data-act="go" data-v="services">'+esc(lbl("services","Commissions"))+'</a></nav>'; }
   html+='<main class="wrap">';
   if(state.view==="work") html+=viewWork();
   if(state.view==="services") html+=viewServices();
@@ -440,7 +512,7 @@ function renderApp(){
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
   let h='<div class="sec-head" style="padding-top:40px"><div class="filters">';
-  tagList().forEach(function(c){ h+='<button class="chip '+(state.tag===c?"on":"")+'" data-act="tagf" data-c="'+esc(c)+'">'+esc(c)+'</button>'; });
+  var PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"]; tagList().forEach(function(c,idx){ var col=(c==="All")?"var(--ink)":PAL[(idx-1)%5]; var on=state.tag===c; var st=on?("background:"+col+";border-color:"+col+";color:#fff"):("color:"+col+";border-color:"+col); h+='<button class="chip'+(on?" on":"")+'" data-act="tagf" data-c="'+esc(c)+'" style="'+st+'">'+esc(c)+'</button>'; });
   h+='</div></div>';
   const list=filtered();
   if(!list.length){ return h+'<div class="empty"><div class="serif">Nothing here yet</div><p>'+(state.isAdmin?"Add your first piece from Manage \u2192 Works.":"New work is coming soon.")+'</p></div>'; }
@@ -451,9 +523,9 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc(w.title)+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
-      '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
-      '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
+      '<div class="card-img"><img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc(w.title)+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+
+      '<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div>'+
+      '<div class="cm">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
   return h+'</div>';
 }
@@ -469,22 +541,22 @@ function viewAbout(){
   const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgSrc(a.photo,"about"))+'" alt="'+esc(s.siteName)+'" />'
     : '<div class="about-photo placeholder"><span>Photo</span></div>';
   const iglink = c.instagram ? '<a class="about-ig" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",16)+' @'+esc(c.instagram)+'</a>' : '';
-  return '<div class="sec-head" style="padding-top:40px"></div><div class="about"><div>'+
+  return '<div class="sec-head" style="padding-top:40px"></div><div class="about-wrap"><div class="about-map" aria-hidden="true">'+contourSVG()+'</div><div class="about"><div>'+
     photo+
-    '<p class="intro">'+esc(a.intro)+'</p><p class="body">'+esc(a.body)+'</p>'+iglink+
+    '<div class="about-statement"'+ed('settings.about.body',1)+' style="white-space:pre-wrap">'+esc(a.body||"")+'</div>'+iglink+
     '</div><div>'+
     cvBlock("Exhibitions",cv.exhibitions)+cvBlock("Public art & press",cv.press)+
-    cvBlock("Teaching",cv.teaching)+cvBlock("Collectives",cv.collectives)+'</div></div>';
+    cvBlock("Teaching",cv.teaching)+cvBlock("Collectives",cv.collectives)+'</div></div></div>';
 }
 function viewContact(){
   const s=state.data.settings, c=s.contact, showSignup=!(s.theme&&s.theme.showSignup===false);
   let signup="";
   if(showSignup){
-    signup='<div class="eyebrow" style="margin-bottom:12px">'+esc(lbl("signup","Get updates by email"))+'</div>'+
+    signup='<div class="eyebrow" style="margin-bottom:12px">'+esc(lbl("signup","New work by email \u2014 about every 2 months"))+'</div>'+
       (state.news?'<div class="news-ok">'+ic("check",16)+' Thanks \u2014 you\u2019ll hear from me.</div>'
         :'<div class="news"><input id="news-email" type="email" placeholder="you@email.com" aria-label="Email address" /><button data-act="subscribe">Send '+ic("cr",14)+'</button></div>');
   }
-  return '<div class="sec-head" style="padding-top:40px"></div><div class="contact"><p class="lead">'+esc(c.note)+'</p>'+
+  return '<div class="sec-head" style="padding-top:40px"></div><div class="contact"><p class="lead"'+ed('settings.contact.note',1)+'>'+esc(c.note)+'</p>'+
     '<div class="clist">'+
     '<div class="crow"><span class="ico">'+ic("ig",18)+'</span><span class="k">Instagram</span><a class="v" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">@'+esc(c.instagram)+'</a></div>'+
     '<div class="crow"><span class="ico">'+ic("mail",18)+'</span><span class="k">Email</span><a class="v" href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a></div>'+
@@ -492,19 +564,21 @@ function viewContact(){
 }
 function viewServices(){
   const sv=(state.data.settings.services)||{intro:"",items:[]};
-  let h='<div class="sec-head" style="padding-top:40px"></div><div class="about"><div>';
-  if(sv.intro) h+='<p class="intro">'+esc(sv.intro)+'</p>';
-  (sv.items||[]).forEach(function(it){ h+='<div style="margin-top:24px"><div class="eyebrow" style="margin-bottom:8px">'+esc(it.title)+'</div><p class="body" style="margin-top:0">'+esc(it.text)+'</p></div>'; });
-  h+='</div><div>'+orderForm()+'</div></div>';
+  let h='<div class="sec-head" style="padding-top:40px"></div><div class="services">';
+  h+='<p class="svc-intro"'+ed('settings.services.intro',1)+'>'+esc(sv.intro||"")+'</p>';
+  if((sv.items||[]).length){ h+='<div class="svc-list">';
+    (sv.items||[]).forEach(function(it,i){ h+='<div class="svc-item"><h3'+ed('settings.services.items.'+i+'.title')+'>'+esc(it.title)+'</h3><p'+ed('settings.services.items.'+i+'.text',1)+'>'+esc(it.text)+'</p></div>'; });
+    h+='</div>'; }
+  h+='<div class="svc-form">'+orderForm()+'</div></div>';
   return h;
 }
 function orderForm(){
-  if(state.orderSent) return '<div class="cv-block"><h3>Request sent</h3><div class="news-ok">'+ic("check",16)+' Thanks \u2014 I will get back to you.</div></div>';
-  return '<div class="cv-block"><h3>Request a lesson or a commission</h3>'+
-    '<label class="fld"><span class="lab">Topic</span><input class="input" id="ord-subject" placeholder="Lesson / commission / other" /></label>'+
-    '<label class="fld"><span class="lab">Message</span><textarea class="input" id="ord-message" placeholder="Tell me what you would like" style="min-height:110px"></textarea></label>'+
-    '<label class="fld"><span class="lab">Your contact (email, phone or @)</span><input class="input" id="ord-contact" placeholder="how can I reach you" /></label>'+
-    '<button class="btn" data-act="order-send">Send request</button></div>';
+  if(state.orderSent) return '<div class="fh">Request</div><div class="news-ok">'+ic("check",16)+' Thanks \u2014 I\u2019ll be in touch.</div>';
+  return '<div class="fh">Enquire \u2014 lesson or commission</div>'+
+    '<input class="uline" id="ord-subject" placeholder="Topic (lesson / commission)" />'+
+    '<textarea class="uline" id="ord-message" placeholder="What would you like?"></textarea>'+
+    '<input class="uline" id="ord-contact" placeholder="Your email or @handle" />'+
+    '<button class="svc-send" data-act="order-send">Send request \u2192</button>';
 }
 /* ===== render: overlays ===== */
 function renderOverlays(){
@@ -515,9 +589,19 @@ function renderOverlays(){
       h+='<div class="lb" data-act="lb-close"><button class="lb-x" data-act="lb-close">'+ic("x",18)+'</button>';
       if(list.length>1){ h+='<button class="lb-nav lb-prev" data-act="lb-prev">'+ic("cl",22)+'</button><button class="lb-nav lb-next" data-act="lb-next">'+ic("cr",22)+'</button>'; }
       const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join("  \u00B7  ");
-      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(imgSrc(w.image,"full"))+'" alt="'+esc(w.title)+'" />'+
-        '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div></div></div></div>';
+      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(imgSrc(w.image))+'" alt="'+esc(w.title)+'" />'+
+        '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div></div>'+
+        '<div class="lb-actions"><button class="lb-btn" data-act="buy-open" data-kind="original">Request to buy</button><button class="lb-btn ghost" data-act="buy-open" data-kind="print">Order a print</button></div>'+
+        '</div></div>';
     }
+  }
+  if(state.buy){
+    const bl=filtered(), bw=bl[state.lightbox]||{}; const heading=state.buy.kind==='print'?'Order a print':'Request to buy';
+    h+='<div class="scrim" data-act="buy-close"></div><div class="modal"><h3>'+esc(heading)+'</h3>'+
+      '<p>'+esc(bw.title||'Untitled')+(bw.year?(' \u00B7 '+esc(bw.year)):'')+(bw.medium?(' \u00B7 '+esc(materialLine(bw))):'')+'</p>'+
+      '<textarea class="input" id="buy-msg" placeholder="Message (size, framing, questions)"></textarea>'+
+      '<input class="input" id="buy-contact" placeholder="Your email or @handle" style="margin-top:10px" />'+
+      '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" data-act="buy-send">Send</button><button class="btn ghost" data-act="buy-close">Cancel</button></div></div>';
   }
   if(state.login){
     h+='<div class="scrim" data-act="login-close"></div><div class="modal"><h3>Admin login</h3>'+
@@ -544,7 +628,7 @@ function renderOverlays(){
 }
 /* ===== render: admin ===== */
 function renderPanel(){
-  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Services"],["orders","Orders"],["settings","Settings"]];
+  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Commissions"],["orders","Orders"],["subscribers","Subscribers"],["settings","Settings"]];
   let h='<div class="panel" role="dialog" aria-label="Manage site"><div class="panel-head"><h3>Manage site</h3>'+
     '<button class="iconbtn" data-act="panel-close">'+ic("x",16)+'</button></div><div class="tabs">';
   tabs.forEach(function(t){ h+='<button class="tab '+(state.panelTab===t[0]?"on":"")+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>'; });
@@ -558,6 +642,7 @@ function panelBody(){
   if(state.panelTab==="contact") return tabContact();
   if(state.panelTab==="services") return tabServices();
   if(state.panelTab==="orders") return tabOrders();
+  if(state.panelTab==="subscribers") return tabSubscribers();
   if(state.panelTab==="settings") return tabSettings();
   return "";
 }
@@ -705,8 +790,7 @@ function tabAbout(){
       : '<div class="drop" data-act="aboutphoto-pick">'+ic("upload",22)+'<span>Upload a photo of you</span></div>')+
     '<input type="file" id="aboutphoto" accept="image/*" style="display:none" /></div>';
   return photoBlock+
-    fld("Intro (large text)",'<textarea class="input" data-bind="data.settings.about.intro">'+esc(a.intro)+'</textarea>')+
-    fld("Body",'<textarea class="input" style="min-height:120px" data-bind="data.settings.about.body">'+esc(a.body)+'</textarea>')+
+    fld("Statement",'<textarea class="input" style="min-height:200px" data-bind="data.settings.about.body">'+esc(a.body)+'</textarea>')+
     editList("Exhibitions","exhibitions",cv.exhibitions)+editList("Public art & press","press",cv.press)+
     editList("Teaching","teaching",cv.teaching)+editList("Collectives","collectives",cv.collectives)+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save</button>';
@@ -746,6 +830,16 @@ function tabOrders(){
   });
   return h;
 }
+function tabSubscribers(){
+  if(state.subscribers===null) return '<p class="mono" style="color:var(--graphite);font-size:13px">Loading\u2026</p>';
+  if(!state.subscribers.length) return '<p class="mono" style="color:var(--graphite);font-size:13px">No subscribers yet.</p>';
+  let h='<p class="mono" style="color:var(--graphite);font-size:12px;margin-bottom:12px">'+state.subscribers.length+' subscriber(s)</p>';
+  h+='<textarea class="input" readonly style="min-height:120px" onclick="this.select()">'+esc(state.subscribers.map(function(x){return x.email;}).join(", "))+'</textarea>';
+  h+='<p class="hint" style="margin-top:8px">Copy these into your email tool to send new work (about every 2 months).</p><div style="margin-top:10px">';
+  state.subscribers.forEach(function(x){ h+='<div class="cat-row"><input class="input" value="'+esc(x.email)+'" readonly /><button class="sq" data-act="sub-del" data-id="'+esc(x.email)+'">'+ic("trash",14)+'</button></div>'; });
+  return h+'</div>';
+}
+function loadSubscribers(){ state.subscribers=null; apiGet('/api/subscribers').then(function(j){ state.subscribers=(j&&j.subscribers)||[]; if(state.panelTab==="subscribers") rerenderPanelBody(); }).catch(function(){ state.subscribers=[]; if(state.panelTab==="subscribers") rerenderPanelBody(); }); }
 function loadOrders(){ state.orders=null; apiGet('/api/orders').then(function(j){ state.orders=(j&&j.orders)||[]; if(state.panelTab==="orders") rerenderPanelBody(); }).catch(function(){ state.orders=[]; if(state.panelTab==="orders") rerenderPanelBody(); }); }
 function tabSettings(){
   const s=state.data.settings, t=s.theme||{}, L=s.labels||{};
@@ -757,9 +851,9 @@ function tabSettings(){
   [2,3,4].forEach(function(n){ cols+='<button class="tagpick '+((t.columns||3)===n?'on':'')+'" data-act="cols" data-c="'+n+'">'+n+'</button>'; });
   cols+='</div>';
   const signup='<button class="tagpick '+(t.showSignup!==false?'on':'')+'" data-act="toggle-signup">'+(t.showSignup!==false?'Shown':'Hidden')+'</button>';
-  const fontNames={editorial:"Editorial (Fraunces)",grotesk:"Grotesk (Space Grotesk)",classic:"Classic (Playfair)",garamond:"Garamond (Cormorant)",archivo:"Archivo"};
+  const fontNames={editorial:"Editorial (Fraunces)",rounded:"Rounded (Quicksand)",grotesk:"Grotesk (Space Grotesk)",classic:"Classic (Playfair)",garamond:"Garamond (Cormorant)",archivo:"Archivo"};
   let fonts='<div class="tagwrap">';
-  ["editorial","grotesk","classic","garamond","archivo"].forEach(function(k){ fonts+='<button class="tagpick '+((t.font||"editorial")===k?'on':'')+'" data-act="font" data-c="'+k+'">'+esc(fontNames[k])+'</button>'; });
+  ["editorial","rounded","grotesk","classic","garamond","archivo"].forEach(function(k){ fonts+='<button class="tagpick '+((t.font||"editorial")===k?'on':'')+'" data-act="font" data-c="'+k+'">'+esc(fontNames[k])+'</button>'; });
   fonts+='</div>';
   let tsize='<div class="tagwrap">'; ["S","M","L","XL"].forEach(function(o){ tsize+='<button class="tagpick '+((t.textSize||"M")===o?'on':'')+'" data-act="tsize" data-c="'+o+'">'+o+'</button>'; }); tsize+='</div>';
   const favImg = t.faviconImg ? '<div style="margin-top:8px;display:flex;gap:8px;align-items:center"><img src="'+esc(t.faviconImg)+'" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid var(--line)" /><button class="btn ghost mini" data-act="favicon-pick">Replace image</button><button class="btn ghost mini" data-act="favicon-imgdel">Remove image</button></div>' : '<div style="margin-top:8px"><button class="btn ghost mini" data-act="favicon-pick">'+ic("upload",13)+' Upload favicon image</button></div>';
@@ -773,7 +867,7 @@ function tabSettings(){
     fld("Work section",'<input class="input" data-bind="data.settings.labels.work" value="'+esc(L.work||"Work")+'" />')+
     fld("About section",'<input class="input" data-bind="data.settings.labels.about" value="'+esc(L.about||"About")+'" />')+
     fld("Contact section",'<input class="input" data-bind="data.settings.labels.contact" value="'+esc(L.contact||"Contact")+'" />')+
-    fld("Services section",'<input class="input" data-bind="data.settings.labels.services" value="'+esc(L.services||"Services")+'" />')+
+    fld("Services section",'<input class="input" data-bind="data.settings.labels.services" value="'+esc(L.services||"Commissions")+'" />')+
     fld("Email signup heading",'<input class="input" data-bind="data.settings.labels.signup" value="'+esc(L.signup||"Get updates by email")+'" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save titles</button>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
@@ -813,6 +907,7 @@ $("#importer") && ($("#importer").onchange=function(e){ const f=e.target.files&&
 async function resetToPublished(){ if(!confirm("Discard local changes and reload the published data.json?")) return; lsDel(LS_DRAFT); try{ await idbDel('draft'); }catch(e){} let d=migrate(SEED()); try{ const res=await fetch('/data.json',{cache:'no-store'}); if(res.ok){ const j=await res.json(); if(j.settings) d=migrate(j); } }catch(e){} state.data=d; setStatus('saved'); toast("Reset to published"); renderApp(); }
 
 document.addEventListener('click', function(e){
+  if(e.target && e.target.isContentEditable) return;
   const el=e.target.closest('[data-act]'); if(!el) return;
   const act=el.getAttribute('data-act');
   switch(act){
@@ -824,13 +919,13 @@ document.addEventListener('click', function(e){
     case "lb-close": state.lightbox=null; renderOverlays(); break;
     case "lb-prev": { const n=filtered().length; state.lightbox=(state.lightbox-1+n)%n; updateLightbox(); break; }
     case "lb-next": { const n=filtered().length; state.lightbox=(state.lightbox+1)%n; updateLightbox(); break; }
-    case "subscribe": { const em=$("#news-email"); if(em && em.value.indexOf('@')>-1){ state.news=true; renderApp(); toast("You're on the list"); } break; }
+    case "subscribe": { const em=$("#news-email"); const v=em?em.value:""; if(v.indexOf('@')<1) break; apiSend("/api/subscribe","POST",{email:v}).then(function(){ state.news=true; renderApp(); toast("Subscribed"); }).catch(function(){ state.news=true; renderApp(); }); break; }
     case "login-go": doLogin(); break;
     case "login-close": state.login=false; renderOverlays(); break;
     case "logout": apiSend("/api/logout","POST",{}); location.href="/"; break;
     case "panel": state.panelOpen=true; renderOverlays(); break;
     case "panel-close": state.panelOpen=false; state.editing=null; state.bulk=null; renderApp(); break;
-    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); if(state.panelTab==="orders") loadOrders(); break;
+    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); if(state.panelTab==="orders") loadOrders(); if(state.panelTab==="subscribers") loadSubscribers(); break;
     case "export": exportData(); break;
     case "publish": exportData(true); state.publish=true; renderOverlays(); break;
     case "publish-close": state.publish=false; renderOverlays(); break;
@@ -872,6 +967,10 @@ document.addEventListener('click', function(e){
     case "cv-add": { const k=el.getAttribute('data-key'); state.data.settings.cv[k].push({year:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
     case "cv-del": { const k=el.getAttribute('data-key'); const idx=parseInt(el.getAttribute('data-i'),10); state.data.settings.cv[k].splice(idx,1); saveDraft(); rerenderPanelBody(); break; }
     case "save-close": saveDraft(); state.panelOpen=false; renderApp(); toast("Saved"); break;
+    case "buy-open": { state.buy={kind:el.getAttribute("data-kind")}; renderOverlays(); break; }
+    case "buy-close": { state.buy=null; renderOverlays(); break; }
+    case "buy-send": { const bl=filtered(), bw=bl[state.lightbox]||{}; const kind=(state.buy&&state.buy.kind)||"original"; const msg=(document.getElementById("buy-msg")||{}).value||""; const con=(document.getElementById("buy-contact")||{}).value||""; if(!con.trim()){ alert("Please add your contact."); break; } const subj=(kind==="print"?"Print":"Buy")+": "+(bw.title||"Untitled")+(bw.year?(" ("+bw.year+")"):""); apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.buy=null; toast("Request sent"); renderOverlays(); } else alert("Could not send."); }).catch(function(){ alert("Could not send."); }); break; }
+    case "sub-del": { const em=el.getAttribute("data-id"); apiSend("/api/subscribers?email="+encodeURIComponent(em),"DELETE"); state.subscribers=(state.subscribers||[]).filter(function(x){return x.email!==em;}); rerenderPanelBody(); break; }
     case "order-send": { const subj=(document.getElementById("ord-subject")||{}).value||""; const msg=(document.getElementById("ord-message")||{}).value||""; const con=(document.getElementById("ord-contact")||{}).value||""; if(!msg.trim()||!con.trim()){ alert("Please add a message and your contact."); break; } apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.orderSent=true; renderApp(); toast("Request sent"); } else { alert("Could not send \u2014 try again."); } }).catch(function(){ alert("Could not send \u2014 try again."); }); break; }
     case "sv-add": { if(!state.data.settings.services) state.data.settings.services={intro:"",items:[]}; state.data.settings.services.items.push({title:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
     case "sv-del": { const i=parseInt(el.getAttribute("data-i"),10); state.data.settings.services.items.splice(i,1); saveDraft(); rerenderPanelBody(); break; }
@@ -880,7 +979,7 @@ document.addEventListener('click', function(e){
     case "pw-change": { const p=$("#newpw"); if(p && p.value.trim()){ lsSet(LS_PW,p.value.trim()); p.value=""; toast("Password changed"); } break; }
   }
 });
-document.addEventListener('input', function(e){ const el=e.target; const bind=el.getAttribute&&el.getAttribute('data-bind'); if(!bind) return; setByPath(state, bind, el.value); saveDraft(); if(bind.indexOf('about.photoPos')>-1){ const pp=state.data.settings.about.photoPos||{x:50,y:50}; const op=(pp.x!=null?pp.x:50)+'% '+(pp.y!=null?pp.y:50)+'%'; const els=document.querySelectorAll('#aboutprev,.about-photo'); for(var i=0;i<els.length;i++){ els[i].style.objectPosition=op; } } });
+document.addEventListener('input', function(e){ const el=e.target; const ep=el.getAttribute&&el.getAttribute('data-edit'); if(ep){ setByPath(state.data, ep, el.innerText); saveDraft(); return; } const bind=el.getAttribute&&el.getAttribute('data-bind'); if(!bind) return; setByPath(state, bind, el.value); saveDraft(); if(bind.indexOf('about.photoPos')>-1){ const pp=state.data.settings.about.photoPos||{x:50,y:50}; const op=(pp.x!=null?pp.x:50)+'% '+(pp.y!=null?pp.y:50)+'%'; const els=document.querySelectorAll('#aboutprev,.about-photo'); for(var i=0;i<els.length;i++){ els[i].style.objectPosition=op; } } });
 document.addEventListener('change', async function(e){
   if(e.target && e.target.id==='accentpicker'){ state.data.settings.theme.accent=e.target.value; applyTheme(); saveDraft(); renderAppKeepPanel(); return; }
   if(e.target && e.target.id==='bulkfile'){ const files=Array.prototype.slice.call(e.target.files||[]); e.target.value=""; if(files.length){ startBulk(files); } return; }
@@ -909,6 +1008,7 @@ function moveWork(id, dir){
   const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); if(state.panelOpen) rerenderPanelBody(); else renderApp();
 }
 var THUMB_V=2;
+async function ensureCover(){ try{ const ws=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const w=ws[0]; if(!w||!w.image) return; const th=state.data.settings.theme||(state.data.settings.theme={}); if(th.coverFrom===w.id) return; const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,1200,0.85); await uploadImage(durl,'cover.jpg'); th.coverFrom=w.id; saveDraft(); }catch(e){} }
 async function optimizeThumbs(force){
   const works=state.data.works||[]; const todo=works.filter(function(w){ return w.image && (force || !w.thumb || w.thumbV!==THUMB_V); });
   if(!todo.length){ if(force) toast("Nothing to optimize"); return; }
@@ -957,6 +1057,8 @@ document.addEventListener('drop', function(e){
   doReorder(kind, from, to);
 });
 document.addEventListener('dragend', function(){ dragFrom=null; dragKind=null; clearDropMarks(); const dg=document.querySelectorAll('.dragging'); for(var i=0;i<dg.length;i++) dg[i].classList.remove('dragging'); });
+document.addEventListener('keydown', function(e){ const el=e.target; if(el&&el.getAttribute&&el.getAttribute('data-edit')&&!el.getAttribute('data-multi')&&e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+document.addEventListener('paste', function(e){ const el=e.target; if(el&&el.getAttribute&&el.getAttribute('data-edit')){ e.preventDefault(); const t=((e.clipboardData||window.clipboardData).getData('text')||''); document.execCommand('insertText', false, t); } });
 boot();
 </script>
 </body>
