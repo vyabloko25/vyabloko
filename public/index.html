@@ -220,6 +220,16 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .svc-send{ background:none; border:none; padding:0 0 2px; font-family:var(--font-mono); font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); border-bottom:2px solid var(--accent); cursor:pointer; }
 .svc-send:hover{ color:var(--accent); }
 @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition:none!important; } }
+
+/* about — floated photo, text wraps */
+.about2{ max-width:880px; position:relative; z-index:1; }
+.about-photo2{ float:left; width:210px; max-width:44%; aspect-ratio:4/5; object-fit:cover; display:block; margin:5px 30px 16px 0; background:var(--card); border:1px solid var(--line); }
+.about-photo2.placeholder{ display:flex; align-items:center; justify-content:center; border:1px dashed var(--line); }
+.about-photo2.placeholder span{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--graphite); }
+.about2 .about-statement{ font-size:calc(17px * var(--tscale)); line-height:1.65; color:#2b2c28; max-width:none; }
+.about2 .about-ig{ clear:both; display:inline-flex; margin-top:22px; }
+.about-cv{ clear:both; margin-top:46px; display:grid; grid-template-columns:1fr 1fr; gap:0 54px; }
+@media(max-width:640px){ .about-photo2{ width:145px; max-width:46%; margin:2px 18px 12px 0; } .about-cv{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -517,15 +527,16 @@ function cvBlock(title, rows){
 function viewAbout(){
   const s=state.data.settings, a=s.about, cv=s.cv, c=s.contact||{};
   const pos=a.photoPos||{x:50,y:50}; const op=(pos.x!=null?pos.x:50)+"% "+(pos.y!=null?pos.y:50)+"%";
-  const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgSrc(a.photo,"about"))+'" alt="'+esc(s.siteName)+'" />'
-    : '<div class="about-photo placeholder"><span>Photo</span></div>';
+  const photo = a.photo ? '<img class="about-photo2" style="object-position:'+op+'" src="'+esc(imgSrc(a.photo,"about"))+'" alt="'+esc(s.siteName)+'" />'
+    : '<div class="about-photo2 placeholder"><span>Photo</span></div>';
   const iglink = c.instagram ? '<a class="about-ig" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",16)+' @'+esc(c.instagram)+'</a>' : '';
-  return '<div class="sec-head" style="padding-top:40px"></div><div class="about-wrap"><div class="about-map" aria-hidden="true">'+contourSVG()+'</div><div class="about"><div>'+
-    photo+
-    '<div class="about-statement"'+ed('settings.about.body',1)+' style="white-space:pre-wrap">'+esc(a.body||"")+'</div>'+iglink+
-    '</div><div>'+
-    cvBlock("Exhibitions",cv.exhibitions)+cvBlock("Public art & press",cv.press)+
-    cvBlock("Teaching",cv.teaching)+cvBlock("Collectives",cv.collectives)+'</div></div></div>';
+  return '<div class="sec-head" style="padding-top:40px"></div>'+
+    '<div class="about-wrap"><div class="about-map" aria-hidden="true">'+contourSVG()+'</div>'+
+    '<div class="about2">'+photo+
+    '<div class="about-statement"'+ed('settings.about.body',1)+' style="white-space:pre-wrap">'+esc(a.body||"")+'</div>'+
+    iglink+
+    '<div class="about-cv">'+cvBlock("Exhibitions",cv.exhibitions)+cvBlock("Public art & press",cv.press)+cvBlock("Teaching",cv.teaching)+cvBlock("Collectives",cv.collectives)+'</div>'+
+    '</div></div>';
 }
 function viewContact(){
   const s=state.data.settings, c=s.contact, showSignup=!(s.theme&&s.theme.showSignup===false);
@@ -958,7 +969,7 @@ document.addEventListener('click', function(e){
     case "pw-change": { const p=$("#newpw"); if(p && p.value.trim()){ lsSet(LS_PW,p.value.trim()); p.value=""; toast("Password changed"); } break; }
   }
 });
-document.addEventListener('input', function(e){ const el=e.target; const ep=el.getAttribute&&el.getAttribute('data-edit'); if(ep){ setByPath(state.data, ep, el.innerText); saveDraft(); return; } const bind=el.getAttribute&&el.getAttribute('data-bind'); if(!bind) return; setByPath(state, bind, el.value); saveDraft(); if(bind.indexOf('about.photoPos')>-1){ const pp=state.data.settings.about.photoPos||{x:50,y:50}; const op=(pp.x!=null?pp.x:50)+'% '+(pp.y!=null?pp.y:50)+'%'; const els=document.querySelectorAll('#aboutprev,.about-photo'); for(var i=0;i<els.length;i++){ els[i].style.objectPosition=op; } } });
+document.addEventListener('input', function(e){ const el=e.target; const ep=el.getAttribute&&el.getAttribute('data-edit'); if(ep){ setByPath(state.data, ep, el.innerText); saveDraft(); return; } const bind=el.getAttribute&&el.getAttribute('data-bind'); if(!bind) return; setByPath(state, bind, el.value); saveDraft(); if(bind.indexOf('about.photoPos')>-1){ const pp=state.data.settings.about.photoPos||{x:50,y:50}; const op=(pp.x!=null?pp.x:50)+'% '+(pp.y!=null?pp.y:50)+'%'; const els=document.querySelectorAll('#aboutprev,.about-photo,.about-photo2'); for(var i=0;i<els.length;i++){ els[i].style.objectPosition=op; } } });
 document.addEventListener('change', async function(e){
   if(e.target && e.target.id==='accentpicker'){ state.data.settings.theme.accent=e.target.value; applyTheme(); saveDraft(); renderAppKeepPanel(); return; }
   if(e.target && e.target.id==='bulkfile'){ const files=Array.prototype.slice.call(e.target.files||[]); e.target.value=""; if(files.length){ startBulk(files); } return; }
