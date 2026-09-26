@@ -397,7 +397,7 @@ async function boot(){
   try{ const ses=await apiGet('/api/session'); state.isAdmin=!!(ses&&ses.auth); }catch(e){}
   if(isCabinet() && !state.isAdmin) state.login=true;
   applyTheme(); renderApp();
-  if(state.isAdmin && !(state.data.settings.theme&&state.data.settings.theme.imgResize)) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && !w.thumb; })) optimizeThumbs(false); }, 700);
+  if(state.isAdmin && !(state.data.settings.theme&&state.data.settings.theme.imgResize)) setTimeout(function(){ if((state.data.works||[]).some(function(w){ return w.image && (!w.thumb || w.thumbV!==THUMB_V); })) optimizeThumbs(false); }, 700);
 }
 window.addEventListener('beforeunload', function(e){ if(state.isAdmin && saveStatus!=='saved'){ e.preventDefault(); e.returnValue=''; return ''; } });
 window.addEventListener('hashchange', function(){ if(isCabinet() && !state.isAdmin){ state.login=true; renderOverlays(); } });
@@ -570,7 +570,7 @@ async function startBulk(files){
   async function worker(){
     while(idx<files.length){
       const i=idx++;
-      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],600,0.70); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
+      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],820,0.82); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, thumbV:THUMB_V, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", tags:[] }; }
       catch(err){ results[i]=null; }
       done++; if(state.bulkLoading) state.bulkLoading.done=done; rerenderPanelBody();
     }
@@ -612,7 +612,7 @@ function saveBulk(){
   const items=state.bulk||[]; if(!items.length){ state.bulk=null; rerenderPanelBody(); return; }
   const works=state.data.works||(state.data.works=[]);
   let base=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0;
-  items.forEach(function(b,k){ works.push({id:b.id,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",w:b.w,h:b.h,order:base+k}); });
+  items.forEach(function(b,k){ works.push({id:b.id,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",thumbV:b.thumbV||0,w:b.w,h:b.h,order:base+k}); });
   const n=items.length; state.bulk=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast(n+" works added");
 }
 function tabWorkEditor(){
@@ -744,7 +744,7 @@ function tabSettings(){
     '<div class="eyebrow" style="margin-bottom:12px">Images</div>'+
     fld("Image domain (from R2)",'<input class="input" data-bind="data.settings.theme.imgBase" value="'+esc((s.theme&&s.theme.imgBase)||"")+'" placeholder="https://img.vyabloko.art" />')+
     '<div class="fld"><span class="lab">Fast images (Cloudflare auto-resize)</span><div class="tagwrap"><button class="tagpick '+((s.theme&&s.theme.imgResize)?'on':'')+'" data-act="toggle-resize">'+((s.theme&&s.theme.imgResize)?'On':'Off')+'</button></div></div>'+
-    '<p class="hint" style="margin:-6px 0 14px">Turn On after enabling Transformations in Cloudflare. Images are then resized and converted to WebP on the fly \u2014 crisp, light and automatic for all works.</p>'+
+    '<p class="hint" style="margin:-6px 0 14px">Optional: needs Cloudflare \u201CTransformations\u201D enabled (paid). Leave Off \u2014 previews are already generated automatically.</p>'+
     '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
     '<div class="eyebrow" style="margin-bottom:12px">Admin access</div>'+
     '<p class="hint">The admin panel is at yourdomain/cabinet. Changes save to the server automatically and are live for everyone right away. Change the password in Cloudflare \u2192 project \u2192 Settings \u2192 Variables and Secrets.</p>';
@@ -832,7 +832,7 @@ document.addEventListener('change', async function(e){
   if(e.target && e.target.id==='aboutphoto'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,1400,0.85); const url=await uploadImage(r.dataUrl); state.data.settings.about.photo=url; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); }catch(err){ alert("Upload failed \u2014 check you are logged in."); } return; }
   if(e.target && e.target.id==='imgfile'){
     const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f||!state.editing) return;
-    try{ const full=await compressImage(f,1600,0.82); const thumb=await compressImage(f,600,0.70); state.editing.image=full.dataUrl; state.editing.w=full.w; state.editing.h=full.h; state.editing._up=true; rerenderPanelBody(); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); state.editing.image=fu; state.editing.thumb=tu; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
+    try{ const full=await compressImage(f,1600,0.82); const thumb=await compressImage(f,820,0.82); state.editing.image=full.dataUrl; state.editing.w=full.w; state.editing.h=full.h; state.editing._up=true; rerenderPanelBody(); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); state.editing.image=fu; state.editing.thumb=tu; state.editing.thumbV=THUMB_V; state.editing._up=false; rerenderPanelBody(); }catch(err){ if(state.editing) state.editing._up=false; rerenderPanelBody(); alert("Upload failed \u2014 check you are logged in."); }
     return;
   }
   if(e.target && e.target.id==='faviconfile'){ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return; try{ const r=await compressImage(f,128,0.9); state.data.settings.theme.faviconImg=r.dataUrl; applyFavicon(); saveDraft(); rerenderPanelBody(); }catch(err){ alert("Couldn't read that image."); } return; }
@@ -843,7 +843,7 @@ document.addEventListener('keydown', function(e){ if(state.lightbox===null) retu
 function saveWork(){
   const e=state.editing; if(!e) return; if(!e.image){ alert("Add an image first."); return; }
   const works=state.data.works||(state.data.works=[]);
-  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,tags:(e.tags||[]).slice(),image:e.image,thumb:e.thumb||"",w:e.w,h:e.h};
+  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,tags:(e.tags||[]).slice(),image:e.image,thumb:e.thumb||"",thumbV:e.thumbV||0,w:e.w,h:e.h};
   const idx=works.findIndex(function(x){return x.id===e.id;});
   if(idx>-1){ clean.order=works[idx].order; works[idx]=clean; } else { clean.order=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0; works.push(clean); }
   state.editing=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast("Work saved");
@@ -853,14 +853,15 @@ function moveWork(id, dir){
   const idx=works.findIndex(function(x){return x.id===id;}); const sw=idx+dir; if(sw<0||sw>=works.length) return;
   const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); rerenderPanelBody(); renderAppKeepPanel();
 }
+var THUMB_V=2;
 async function optimizeThumbs(force){
-  const works=state.data.works||[]; const todo=works.filter(function(w){ return w.image && (force || !w.thumb); });
+  const works=state.data.works||[]; const todo=works.filter(function(w){ return w.image && (force || !w.thumb || w.thumbV!==THUMB_V); });
   if(!todo.length){ if(force) toast("Nothing to optimize"); return; }
   if(optimizeThumbs._busy) return; optimizeThumbs._busy=true;
   toast("Optimising previews\u2026 ("+todo.length+")");
   let done=0;
   for(let i=0;i<todo.length;i++){ const w=todo[i];
-    try{ const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,600,0.70); const url=await uploadImage(durl); w.thumb=url; done++; }catch(e){}
+    try{ const img=await loadImageEl(w.image); const durl=downscaleDataUrl(img,820,0.82); const url=await uploadImage(durl); w.thumb=url; w.thumbV=THUMB_V; done++; }catch(e){}
   }
   optimizeThumbs._busy=false;
   if(done){ saveDraft(); renderAppKeepPanel(); toast("Previews ready ("+done+")"); }
