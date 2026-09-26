@@ -55,6 +55,7 @@ img{ max-width:100%; }
 .card.dragging{ opacity:.4; }
 .card.drop-target{ outline:2px solid var(--accent); outline-offset:-2px; }
 .card-grip{ position:absolute; top:8px; left:8px; z-index:2; display:flex; align-items:center; background:rgba(245,244,239,.92); color:var(--accent); border:1px solid var(--line); border-radius:3px; padding:2px 3px; pointer-events:none; }
+@media (pointer:coarse){ .card-grip{ display:none; } }
 .label .t{ font-family:var(--font-display); font-size:17px; font-weight:500; }
 .label .m{ font-family:var(--font-mono); font-size:11px; letter-spacing:.03em; opacity:.85; margin-top:3px; }
 @media(hover:none){ .card .label{ opacity:1; transform:none; background:linear-gradient(to top, rgba(23,24,26,.78), rgba(23,24,26,0)); } }
@@ -217,6 +218,7 @@ function uid(){ return 'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)
 function toggleTag(arr, val){ const i=arr.indexOf(val); if(i>-1) arr.splice(i,1); else arr.push(val); }
 function cleanName(name){ var s=String(name||"").replace(/\.[^.]+$/,""); s=s.replace(/_+/g," "); s=s.replace(/^\s*\d{1,3}\s*[-.)]\s+/,""); s=s.replace(/\s+/g," ").trim(); return s; }
 function igUrl(c){ return (c && (c.instagramUrl || (c.instagram && ('https://instagram.com/'+c.instagram)))) || '#'; }
+function imgURL(u){ if(!u) return u; const b=(state.data&&state.data.settings&&state.data.settings.theme&&state.data.settings.theme.imgBase)||''; if(b && u.indexOf('/img/')===0){ return b.replace(/\/+$/,'')+u.slice(4); } return u; }
 function materialLine(w){ const m=(w.medium||"").trim(), s=(w.support||"").trim(); if(m&&s) return m+" on "+s; return m||s||""; }
 function sizeLine(w){ const h=(w.height!=null&&w.height!=="")?w.height:"", wd=(w.width!=null&&w.width!=="")?w.width:""; if(h!==""&&wd!=="") return h+" \u00D7 "+wd+" cm"; if(h!=="") return h+" cm"; if(wd!=="") return wd+" cm"; return ""; }
 function lbl(k,d){ const L=(state.data&&state.data.settings&&state.data.settings.labels)||{}; return (L[k]!=null&&L[k]!=="")?L[k]:d; }
@@ -261,7 +263,7 @@ function SEED(){
     settings:{
       siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
       labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email" },
-      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"" },
+      theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"" },
       about:{ photo:"", photoPos:{x:50,y:50},
         intro:"Hi! I'm Vasily. This is where I keep my work \u2014 what I'm making now, and what has already found its viewers.",
         body:"I work with form, colour and everyday subjects, and I like it best when a piece goes on living in someone's home. If something here speaks to you, write to me.\n\n(This is placeholder text \u2014 replace it from Manage site.)" },
@@ -291,7 +293,7 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M";
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase="";
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
@@ -443,7 +445,7 @@ function viewWork(){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<img src="'+esc(w.thumb||w.image)+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
+      '<img src="'+esc(imgURL(w.thumb||w.image))+'" alt="'+esc(w.title)+'" loading="lazy" decoding="async"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' />'+
       '<figcaption class="label"><div class="t">'+esc(w.title||"Untitled")+'</div>'+
       '<div class="m">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>';
   });
@@ -458,7 +460,7 @@ function cvBlock(title, rows){
 function viewAbout(){
   const s=state.data.settings, a=s.about, cv=s.cv, c=s.contact||{};
   const pos=a.photoPos||{x:50,y:50}; const op=(pos.x!=null?pos.x:50)+"% "+(pos.y!=null?pos.y:50)+"%";
-  const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(a.photo)+'" alt="'+esc(s.siteName)+'" />'
+  const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgURL(a.photo))+'" alt="'+esc(s.siteName)+'" />'
     : '<div class="about-photo placeholder"><span>Photo</span></div>';
   const iglink = c.instagram ? '<a class="about-ig" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",16)+' @'+esc(c.instagram)+'</a>' : '';
   return '<div class="sec-head"><h2>'+esc(lbl("about","About"))+'</h2></div><div class="about"><div>'+
@@ -491,7 +493,7 @@ function renderOverlays(){
       h+='<div class="lb" data-act="lb-close"><button class="lb-x" data-act="lb-close">'+ic("x",18)+'</button>';
       if(list.length>1){ h+='<button class="lb-nav lb-prev" data-act="lb-prev">'+ic("cl",22)+'</button><button class="lb-nav lb-next" data-act="lb-next">'+ic("cr",22)+'</button>'; }
       const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join("  \u00B7  ");
-      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(w.image)+'" alt="'+esc(w.title)+'" />'+
+      h+='<div class="lb-inner" data-stop="1"><img src="'+esc(imgURL(w.image))+'" alt="'+esc(w.title)+'" />'+
         '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div></div></div></div>';
     }
   }
@@ -612,7 +614,7 @@ function saveBulk(){
 }
 function tabWorkEditor(){
   const e=state.editing;
-  const preview=e.image?'<img src="'+esc(e.image)+'" alt="" style="max-height:180px;max-width:100%;border:1px solid var(--line)" />':(ic("upload",22)+'<span>Click to upload an image</span>');
+  const preview=e.image?'<img src="'+esc(imgURL(e.image))+'" alt="" style="max-height:180px;max-width:100%;border:1px solid var(--line)" />':(ic("upload",22)+'<span>Click to upload an image</span>');
   return '<button class="btn ghost mini" style="margin-bottom:16px" data-act="work-cancel">'+ic("cl",13)+' Back</button>'+
     '<div class="drop" data-act="pick-image">'+preview+'</div>'+
     (e.image?'<button class="btn ghost mini" style="margin:10px 0 18px" data-act="pick-image">Replace image</button>':'')+
@@ -669,7 +671,7 @@ function tabAbout(){
   const pos=a.photoPos||{x:50,y:50}; const op=(pos.x!=null?pos.x:50)+"% "+(pos.y!=null?pos.y:50)+"%";
   const photoBlock = '<div class="fld"><span class="lab">About photo</span>'+
     (a.photo
-      ? '<div style="width:150px;height:188px;overflow:hidden;border:1px solid var(--line)"><img id="aboutprev" src="'+esc(a.photo)+'" alt="" style="width:100%;height:100%;object-fit:cover;object-position:'+op+'" /></div>'+
+      ? '<div style="width:150px;height:188px;overflow:hidden;border:1px solid var(--line)"><img id="aboutprev" src="'+esc(imgURL(a.photo))+'" alt="" style="width:100%;height:100%;object-fit:cover;object-position:'+op+'" /></div>'+
         '<div style="margin-top:8px;display:flex;gap:8px"><button class="btn ghost mini" data-act="aboutphoto-pick">Replace</button><button class="btn ghost mini" data-act="aboutphoto-del">Remove</button></div>'+
         '<div style="margin-top:12px"><span class="lab">Photo position (move the focal point)</span>'+
           '<div style="display:flex;gap:14px;align-items:center;font-family:var(--font-mono);font-size:11px;color:var(--graphite)">'+
@@ -737,6 +739,8 @@ function tabSettings(){
     '</div>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
     '<div class="eyebrow" style="margin-bottom:12px">Performance</div>'+
+    fld("Image domain (advanced \u2014 serve images from R2 CDN)",'<input class="input" data-bind="data.settings.theme.imgBase" value="'+esc((s.theme&&s.theme.imgBase)||"")+'" placeholder="https://img.vyabloko.art" />')+
+    '<p class="hint" style="margin:-8px 0 14px">Leave empty to serve images through the app. If you connect the R2 bucket to a domain (e.g. img.vyabloko.art), paste it here \u2014 images then load straight from Cloudflare\u2019s CDN (fastest).</p>'+
     '<button class="btn ghost" data-act="optimize-thumbs">Optimize image loading</button>'+
     '<p class="hint" style="margin-top:6px">Creates small preview versions of existing works so the grid loads fast. New uploads get this automatically.</p>'+
     '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
