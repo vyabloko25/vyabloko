@@ -266,7 +266,8 @@ function SEED(){
   return {
     settings:{
       siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
-      labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email" },
+      labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email", services:"Services" },
+      services:{ intro:"I take commissions and give lessons \u2014 tell me what you have in mind.", items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}] },
       theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"", imgResize:false },
       about:{ photo:"", photoPos:{x:50,y:50},
         intro:"Hi! I'm Vasily. This is where I keep my work \u2014 what I'm making now, and what has already found its viewers.",
@@ -301,7 +302,7 @@ function migrate(d){
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
-  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin";
+  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null) s.labels.services="Services"; if(!s.services) s.services={intro:"I take commissions and give lessons \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}]};
   (d.works||[]).forEach(function(w){
     if(!Array.isArray(w.tags)){ w.tags = w.category ? [w.category] : []; }
     if(w.size==null) w.size="";
@@ -325,7 +326,7 @@ const state = {
   data:null, view:"work", tag:"All", mobileNav:false,
   isAdmin:false, panelOpen:false, panelTab:"works",
   editing:null, bulk:null, bulkLoading:null, lightbox:null,
-  login:false, loginErr:false, news:false, publish:false
+  login:false, loginErr:false, news:false, publish:false, orderSent:false, orders:null
 };
 /* ---- durable draft storage: IndexedDB (large quota) with save status ---- */
 var idb=null;
@@ -420,11 +421,12 @@ function renderApp(){
   }
   const logo = (s.theme&&s.theme.logo)?('<span class="mark">'+esc(s.theme.logo)+'</span>'):'';
   html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1>'+esc(s.siteName)+'</h1>'+(s.subtitle?'<div class="subtitle">'+esc(s.subtitle)+'</div>':'')+'</div></div>'+
-    '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+'</div>'+
+    '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+navlink("services",lbl("services","Services"))+'</div>'+
     '<button class="iconbtn burger" data-act="burger">'+ic("menu",16)+'</button></div></header>';
-  if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a></nav>'; }
+  if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a><a data-act="go" data-v="services">'+esc(lbl("services","Services"))+'</a></nav>'; }
   html+='<main class="wrap">';
   if(state.view==="work") html+=viewWork();
+  if(state.view==="services") html+=viewServices();
   if(state.view==="about") html+=viewAbout();
   if(state.view==="contact") html+=viewContact();
   html+='</main>';
@@ -467,7 +469,7 @@ function viewAbout(){
   const photo = a.photo ? '<img class="about-photo" style="object-position:'+op+'" src="'+esc(imgSrc(a.photo,"about"))+'" alt="'+esc(s.siteName)+'" />'
     : '<div class="about-photo placeholder"><span>Photo</span></div>';
   const iglink = c.instagram ? '<a class="about-ig" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">'+ic("ig",16)+' @'+esc(c.instagram)+'</a>' : '';
-  return '<div class="sec-head"><h2>'+esc(lbl("about","About"))+'</h2></div><div class="about"><div>'+
+  return '<div class="sec-head" style="padding-top:40px"></div><div class="about"><div>'+
     photo+
     '<p class="intro">'+esc(a.intro)+'</p><p class="body">'+esc(a.body)+'</p>'+iglink+
     '</div><div>'+
@@ -482,11 +484,27 @@ function viewContact(){
       (state.news?'<div class="news-ok">'+ic("check",16)+' Thanks \u2014 you\u2019ll hear from me.</div>'
         :'<div class="news"><input id="news-email" type="email" placeholder="you@email.com" aria-label="Email address" /><button data-act="subscribe">Send '+ic("cr",14)+'</button></div>');
   }
-  return '<div class="sec-head"><h2>'+esc(lbl("contact","Contact"))+'</h2></div><div class="contact"><p class="lead">'+esc(c.note)+'</p>'+
+  return '<div class="sec-head" style="padding-top:40px"></div><div class="contact"><p class="lead">'+esc(c.note)+'</p>'+
     '<div class="clist">'+
     '<div class="crow"><span class="ico">'+ic("ig",18)+'</span><span class="k">Instagram</span><a class="v" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">@'+esc(c.instagram)+'</a></div>'+
     '<div class="crow"><span class="ico">'+ic("mail",18)+'</span><span class="k">Email</span><a class="v" href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a></div>'+
     '</div>'+signup+'</div>';
+}
+function viewServices(){
+  const sv=(state.data.settings.services)||{intro:"",items:[]};
+  let h='<div class="sec-head" style="padding-top:40px"></div><div class="about"><div>';
+  if(sv.intro) h+='<p class="intro">'+esc(sv.intro)+'</p>';
+  (sv.items||[]).forEach(function(it){ h+='<div style="margin-top:24px"><div class="eyebrow" style="margin-bottom:8px">'+esc(it.title)+'</div><p class="body" style="margin-top:0">'+esc(it.text)+'</p></div>'; });
+  h+='</div><div>'+orderForm()+'</div></div>';
+  return h;
+}
+function orderForm(){
+  if(state.orderSent) return '<div class="cv-block"><h3>Request sent</h3><div class="news-ok">'+ic("check",16)+' Thanks \u2014 I will get back to you.</div></div>';
+  return '<div class="cv-block"><h3>Request a lesson or a commission</h3>'+
+    '<label class="fld"><span class="lab">Topic</span><input class="input" id="ord-subject" placeholder="Lesson / commission / other" /></label>'+
+    '<label class="fld"><span class="lab">Message</span><textarea class="input" id="ord-message" placeholder="Tell me what you would like" style="min-height:110px"></textarea></label>'+
+    '<label class="fld"><span class="lab">Your contact (email, phone or @)</span><input class="input" id="ord-contact" placeholder="how can I reach you" /></label>'+
+    '<button class="btn" data-act="order-send">Send request</button></div>';
 }
 /* ===== render: overlays ===== */
 function renderOverlays(){
@@ -526,7 +544,7 @@ function renderOverlays(){
 }
 /* ===== render: admin ===== */
 function renderPanel(){
-  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["settings","Settings"]];
+  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Services"],["orders","Orders"],["settings","Settings"]];
   let h='<div class="panel" role="dialog" aria-label="Manage site"><div class="panel-head"><h3>Manage site</h3>'+
     '<button class="iconbtn" data-act="panel-close">'+ic("x",16)+'</button></div><div class="tabs">';
   tabs.forEach(function(t){ h+='<button class="tab '+(state.panelTab===t[0]?"on":"")+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>'; });
@@ -538,6 +556,8 @@ function panelBody(){
   if(state.panelTab==="materials") return tabMaterials();
   if(state.panelTab==="about") return tabAbout();
   if(state.panelTab==="contact") return tabContact();
+  if(state.panelTab==="services") return tabServices();
+  if(state.panelTab==="orders") return tabOrders();
   if(state.panelTab==="settings") return tabSettings();
   return "";
 }
@@ -699,6 +719,34 @@ function tabContact(){
     fld("Email",'<input class="input" data-bind="data.settings.contact.email" value="'+esc(c.email)+'" placeholder="vasily.yablokov@gmail.com" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save contact</button>';
 }
+function tabServices(){
+  const sv=state.data.settings.services||{intro:"",items:[]};
+  let h=fld("Intro",'<textarea class="input" data-bind="data.settings.services.intro">'+esc(sv.intro||"")+'</textarea>');
+  h+='<div class="eyebrow" style="margin:6px 0 10px">Offerings</div>';
+  (sv.items||[]).forEach(function(it,i){
+    h+='<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)">'+
+      '<input class="input" data-bind="data.settings.services.items.'+i+'.title" value="'+esc(it.title)+'" placeholder="Title" style="margin-bottom:6px" />'+
+      '<textarea class="input" data-bind="data.settings.services.items.'+i+'.text" placeholder="Description">'+esc(it.text)+'</textarea>'+
+      '<button class="btn ghost mini" data-act="sv-del" data-i="'+i+'" style="margin-top:6px">'+ic("trash",12)+' Remove</button></div>';
+  });
+  h+='<button class="btn ghost mini" data-act="sv-add">'+ic("plus",12)+' Add offering</button>'+
+     '<div style="margin-top:16px"><button class="btn" data-act="save-close">'+ic("check",14)+' Save</button></div>';
+  return h;
+}
+function tabOrders(){
+  if(state.orders===null) return '<p class="mono" style="color:var(--graphite);font-size:13px">Loading\u2026</p>';
+  if(!state.orders.length) return '<p class="mono" style="color:var(--graphite);font-size:13px">No requests yet.</p>';
+  let h='<p class="mono" style="color:var(--graphite);font-size:12px;margin-bottom:14px">'+state.orders.length+' request(s)</p>';
+  state.orders.forEach(function(o){ const d=new Date(o.created_at||0);
+    h+='<div style="border:1px solid var(--line);padding:12px;margin-bottom:10px">'+
+      '<div class="mono" style="font-size:11px;color:var(--graphite)">'+esc(("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear())+(o.subject?(" \u00B7 "+esc(o.subject)):"")+'</div>'+
+      '<div style="margin:6px 0;white-space:pre-wrap">'+esc(o.message||"")+'</div>'+
+      '<div class="mono" style="font-size:12px;color:var(--accent)">'+esc(o.contact||"")+'</div>'+
+      '<button class="btn ghost mini" data-act="order-del" data-id="'+esc(o.id)+'" style="margin-top:8px">'+ic("trash",12)+' Delete</button></div>';
+  });
+  return h;
+}
+function loadOrders(){ state.orders=null; apiGet('/api/orders').then(function(j){ state.orders=(j&&j.orders)||[]; if(state.panelTab==="orders") rerenderPanelBody(); }).catch(function(){ state.orders=[]; if(state.panelTab==="orders") rerenderPanelBody(); }); }
 function tabSettings(){
   const s=state.data.settings, t=s.theme||{}, L=s.labels||{};
   const presets=["#3B5C4A","#2438C9","#7A2E2E","#17181A","#B5502F","#5B2A6B"];
@@ -725,6 +773,7 @@ function tabSettings(){
     fld("Work section",'<input class="input" data-bind="data.settings.labels.work" value="'+esc(L.work||"Work")+'" />')+
     fld("About section",'<input class="input" data-bind="data.settings.labels.about" value="'+esc(L.about||"About")+'" />')+
     fld("Contact section",'<input class="input" data-bind="data.settings.labels.contact" value="'+esc(L.contact||"Contact")+'" />')+
+    fld("Services section",'<input class="input" data-bind="data.settings.labels.services" value="'+esc(L.services||"Services")+'" />')+
     fld("Email signup heading",'<input class="input" data-bind="data.settings.labels.signup" value="'+esc(L.signup||"Get updates by email")+'" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save titles</button>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
@@ -744,8 +793,11 @@ function tabSettings(){
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
 
     '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
-    '<div class="eyebrow" style="margin-bottom:12px">Admin access</div>'+
-    '<p class="hint">The admin panel is at yourdomain/cabinet. Changes save to the server automatically and are live for everyone right away. Change the password in Cloudflare \u2192 project \u2192 Settings \u2192 Variables and Secrets.</p>';
+    '<div class="eyebrow" style="margin-bottom:12px">Change password</div>'+
+    fld("Current password",'<input class="input" id="pw-old" type="password" autocomplete="off" />')+
+    fld("New password",'<input class="input" id="pw-new" type="password" autocomplete="off" />')+
+    '<button class="btn ghost" data-act="pw-save">Change password</button>'+
+    '<p class="hint" style="margin-top:8px">Enter your current password and a new one. Takes effect immediately; you stay logged in.</p>';
 }
 function fld(label, inner){ return '<label class="fld"><span class="lab">'+esc(label)+'</span>'+inner+'</label>'; }
 /* ===== actions ===== */
@@ -775,10 +827,10 @@ document.addEventListener('click', function(e){
     case "subscribe": { const em=$("#news-email"); if(em && em.value.indexOf('@')>-1){ state.news=true; renderApp(); toast("You're on the list"); } break; }
     case "login-go": doLogin(); break;
     case "login-close": state.login=false; renderOverlays(); break;
-    case "logout": apiSend("/api/logout","POST",{}); state.isAdmin=false; state.panelOpen=false; if(location.hash) location.hash=''; renderApp(); toast("Signed out"); break;
+    case "logout": apiSend("/api/logout","POST",{}); location.href="/"; break;
     case "panel": state.panelOpen=true; renderOverlays(); break;
     case "panel-close": state.panelOpen=false; state.editing=null; state.bulk=null; renderApp(); break;
-    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); break;
+    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); if(state.panelTab==="orders") loadOrders(); break;
     case "export": exportData(); break;
     case "publish": exportData(true); state.publish=true; renderOverlays(); break;
     case "publish-close": state.publish=false; renderOverlays(); break;
@@ -820,6 +872,11 @@ document.addEventListener('click', function(e){
     case "cv-add": { const k=el.getAttribute('data-key'); state.data.settings.cv[k].push({year:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
     case "cv-del": { const k=el.getAttribute('data-key'); const idx=parseInt(el.getAttribute('data-i'),10); state.data.settings.cv[k].splice(idx,1); saveDraft(); rerenderPanelBody(); break; }
     case "save-close": saveDraft(); state.panelOpen=false; renderApp(); toast("Saved"); break;
+    case "order-send": { const subj=(document.getElementById("ord-subject")||{}).value||""; const msg=(document.getElementById("ord-message")||{}).value||""; const con=(document.getElementById("ord-contact")||{}).value||""; if(!msg.trim()||!con.trim()){ alert("Please add a message and your contact."); break; } apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.orderSent=true; renderApp(); toast("Request sent"); } else { alert("Could not send \u2014 try again."); } }).catch(function(){ alert("Could not send \u2014 try again."); }); break; }
+    case "sv-add": { if(!state.data.settings.services) state.data.settings.services={intro:"",items:[]}; state.data.settings.services.items.push({title:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
+    case "sv-del": { const i=parseInt(el.getAttribute("data-i"),10); state.data.settings.services.items.splice(i,1); saveDraft(); rerenderPanelBody(); break; }
+    case "order-del": { const id=el.getAttribute("data-id"); apiSend("/api/orders?id="+encodeURIComponent(id),"DELETE"); state.orders=(state.orders||[]).filter(function(o){return o.id!==id;}); rerenderPanelBody(); break; }
+    case "pw-save": { const o=(document.getElementById("pw-old")||{}).value||""; const n=(document.getElementById("pw-new")||{}).value||""; if(n.length<4){ alert("New password too short (min 4)."); break; } apiSend("/api/password","POST",{oldPassword:o,newPassword:n}).then(async function(r){ if(r.ok){ toast("Password changed"); const oe=document.getElementById("pw-old"),ne=document.getElementById("pw-new"); if(oe)oe.value=""; if(ne)ne.value=""; } else { const j=await r.json().catch(function(){return{};}); alert(j.error||"Could not change password."); } }).catch(function(){ alert("Could not change password."); }); break; }
     case "pw-change": { const p=$("#newpw"); if(p && p.value.trim()){ lsSet(LS_PW,p.value.trim()); p.value=""; toast("Password changed"); } break; }
   }
 });
@@ -849,7 +906,7 @@ function saveWork(){
 function moveWork(id, dir){
   const works=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
   const idx=works.findIndex(function(x){return x.id===id;}); const sw=idx+dir; if(sw<0||sw>=works.length) return;
-  const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); rerenderPanelBody(); renderAppKeepPanel();
+  const t=works[idx].order; works[idx].order=works[sw].order; works[sw].order=t; saveDraft(); if(state.panelOpen) rerenderPanelBody(); else renderApp();
 }
 var THUMB_V=2;
 async function optimizeThumbs(force){
@@ -875,7 +932,7 @@ function doReorder(kind, from, to){
   if(kind==='bulk'){ if(!state.bulk) return; arrMove(state.bulk, from, to); rerenderPanelBody(); }
   else if(kind==='works'){
     const sorted=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
-    arrMove(sorted, from, to); sorted.forEach(function(w,idx){ w.order=idx; }); saveDraft(); rerenderPanelBody(); renderAppKeepPanel();
+    arrMove(sorted, from, to); sorted.forEach(function(w,idx){ w.order=idx; }); saveDraft(); if(state.panelOpen) rerenderPanelBody(); else renderApp();
   }
 }
 document.addEventListener('dragstart', function(e){
