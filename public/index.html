@@ -85,7 +85,7 @@ img{ max-width:100%; }
 .about-wrap{ position:relative; overflow:hidden; }
 .about-map{ position:absolute; inset:-12% -6%; color:var(--accent); opacity:.08; z-index:0; pointer-events:none; }
 .about-wrap .about{ position:relative; z-index:1; }
-.about-statement{ font-family:var(--font-body); font-size:calc(16px * var(--tscale)); line-height:1.6; max-width:56ch; color:#2b2c28; }
+.about-statement{ font-family:var(--font-body); font-size:calc(14px * var(--tscale)); line-height:1.6; max-width:60ch; color:#2b2c28; }
 .about .body{ margin-top:22px; font-size:calc(16px * var(--tscale)); color:#33342f; max-width:52ch; white-space:pre-wrap; }
 .about-ig{ display:inline-flex; align-items:center; gap:8px; margin-top:22px; font-family:var(--font-mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--graphite); }
 .about-ig svg{ color:var(--accent); }
@@ -226,18 +226,23 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .about-photo2{ float:left; width:210px; max-width:44%; aspect-ratio:4/5; object-fit:cover; display:block; margin:5px 30px 16px 0; background:var(--card); border:1px solid var(--line); }
 .about-photo2.placeholder{ display:flex; align-items:center; justify-content:center; border:1px dashed var(--line); }
 .about-photo2.placeholder span{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--graphite); }
-.about2 .about-statement{ font-size:calc(17px * var(--tscale)); line-height:1.65; color:#2b2c28; max-width:none; }
+.about2 .about-statement{ font-size:calc(14px * var(--tscale)); line-height:1.65; color:#2b2c28; max-width:none; }
 .about2 .about-ig{ clear:both; display:inline-flex; margin-top:22px; }
 .about-cv{ clear:both; margin-top:46px; display:grid; grid-template-columns:1fr 1fr; gap:0 54px; }
 @media(max-width:640px){ .about-photo2{ width:145px; max-width:46%; margin:2px 18px 12px 0; } .about-cv{ grid-template-columns:1fr; } }
 
 /* hero */
-.hero{ position:relative; cursor:pointer; background:var(--card); border-bottom:1px solid var(--line); margin-bottom:6px; }
-.hero-frame{ height:min(64vh,700px); display:flex; align-items:center; justify-content:center; padding:20px; }
-.hero-frame img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
-.hero-cap{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:12px 22px 16px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); }
-.hero-cap .hn{ color:var(--ink); }
-@media(max-width:640px){ .hero-frame{ height:56vh; padding:12px; } .hero-cap{ padding:10px 16px 14px; } }
+.hero{ position:relative; overflow:hidden; cursor:pointer; background:var(--ink); height:min(78vh,820px); margin-bottom:6px; }
+.hero-media{ position:absolute; inset:0; }
+.hero-media img{ width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.06); animation:kenburns 28s ease-in-out infinite alternate; }
+.hero-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(14,14,16,.66), rgba(14,14,16,.30) 55%, rgba(14,14,16,.40)); }
+.hero-ov{ position:absolute; left:0; right:0; bottom:0; padding:46px 30px 40px; color:#fff; }
+.hero-name{ font-family:var(--font-display); text-transform:uppercase; font-weight:600; font-size:clamp(30px,6.4vw,74px); line-height:1; letter-spacing:.05em; }
+.hero-sub{ font-family:var(--font-mono); text-transform:uppercase; font-size:12px; letter-spacing:.18em; margin-top:14px; opacity:.92; }
+.hero-cue{ position:absolute; right:22px; top:20px; font-family:var(--font-mono); text-transform:uppercase; font-size:11px; letter-spacing:.14em; color:#fff; opacity:.85; }
+@keyframes kenburns{ from{ transform:scale(1.06) translate(0,0); } to{ transform:scale(1.16) translate(-1.5%,-1.5%); } }
+@media(max-width:640px){ .hero{ height:64vh; } .hero-ov{ padding:28px 18px 24px; } }
+@media(prefers-reduced-motion:reduce){ .hero-media img{ animation:none; transform:scale(1.02); } }
 /* card badges / sold / price / skeleton */
 .card-img{ position:relative; }
 .card-img::before{ content:""; position:absolute; inset:0; z-index:0; background:linear-gradient(100deg,#ece6da,#f5f0e7,#ece6da); background-size:200% 100%; animation:sk 1.4s ease-in-out infinite; }
@@ -366,7 +371,7 @@ function SEED(){
     settings:{
       siteName:"Vasily Yablokov", role:"Artist", subtitle:"Experimental artist from Berlin", domain:"vyabloko.art",
       labels:{ work:"Work", about:"About", contact:"Contact", signup:"Get updates by email", services:"Commissions" },
-      services:{ intro:"I take commissions and give lessons \u2014 tell me what you have in mind.", items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}] },
+      services:{ intro:"I take commissions \u2014 tell me what you have in mind.", items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."}] },
       theme:{ accent:"#3B5C4A", columns:3, showSignup:true, textSize:"M", font:"editorial", logo:"\uD83C\uDF4F", favicon:"\uD83C\uDF4F", faviconImg:"", imgBase:"", imgResize:false },
       about:{ photo:"", photoPos:{x:50,y:50},
         intro:"Hi! I'm Vasily. This is where I keep my work \u2014 what I'm making now, and what has already found its viewers.",
@@ -401,7 +406,7 @@ function migrate(d){
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
-  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null||s.labels.services==="Services") s.labels.services="Commissions"; if(!s.services) s.services={intro:"I take commissions and give lessons \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."},{title:"Lesson on request",text:"One-to-one or small group, in person or online."}]};
+  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null||s.labels.services==="Services") s.labels.services="Commissions"; if(!s.services) s.services={intro:"I take commissions \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."}]}; if(!s.servicesV || s.servicesV<2){ if(s.services){ s.services.items=(s.services.items||[]).filter(function(it){ return !/lesson|\u0443\u0440\u043E\u043A/i.test((it&&it.title)||""); }); if(/lessons?/i.test(s.services.intro||"")) s.services.intro="I take commissions \u2014 tell me what you have in mind."; } s.servicesV=2; }
   (d.works||[]).forEach(function(w){
     if(!Array.isArray(w.tags)){ w.tags = w.category ? [w.category] : []; }
     if(w.size==null) w.size="";
@@ -544,7 +549,7 @@ function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(sta
 function viewWork(){
   const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const feat=all[0];
   let h='';
-  if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><div class="hero-frame"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /></div><div class="hero-cap"><span class="hn">'+esc(feat.title||'')+(feat.year?(' \u00B7 '+esc(feat.year)):'')+'</span><span class="hc">View \u2193</span></div></section>'; }
+  if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><div class="hero-media"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /></div><div class="hero-scrim"></div><div class="hero-ov"><div class="hero-name">'+esc(state.data.settings.siteName)+'</div>'+(state.data.settings.subtitle?'<div class="hero-sub">'+esc(state.data.settings.subtitle)+'</div>':'')+'</div><div class="hero-cue">'+esc(lbl("work","Work"))+' \u2193</div></section>'; }
   h+='<div class="sec-head" style="padding-top:40px"><div class="filters">';
   var PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"]; tagList().forEach(function(c,idx){ var col=(c==="All")?"var(--ink)":PAL[(idx-1)%5]; var on=state.tag===c; var st=on?("background:"+col+";border-color:"+col+";color:#fff"):("color:"+col+";border-color:"+col); h+='<button class="chip'+(on?" on":"")+'" data-act="tagf" data-c="'+esc(c)+'" style="'+st+'">'+esc(c)+'</button>'; });
   h+='</div></div>';
@@ -556,7 +561,7 @@ function viewWork(){
   list.forEach(function(w,i){
     const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
     const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
-    const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':(st==='reserved'?'<span class="badge reserved">Reserved</span>':'');
+    const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':'';
     h+='<figure class="card'+(adminDrag?' can-drag':'')+(st==='sold'?' is-sold':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
       '<div class="card-img">'+badge+'<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc([w.title,materialLine(w)].filter(Boolean).join(", "))+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+
       '<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div>'+
@@ -611,7 +616,7 @@ function viewServices(){
 }
 function orderForm(){
   if(state.orderSent) return '<div class="fh">Request</div><div class="news-ok">'+ic("check",16)+' Thanks \u2014 I\u2019ll be in touch.</div>';
-  return '<div class="fh">Enquire \u2014 lesson or commission</div>'+
+  return '<div class="fh">Enquire about a commission</div>'+
     '<input class="uline" id="ord-subject" placeholder="Topic (lesson / commission)" />'+
     '<textarea class="uline" id="ord-message" placeholder="What would you like?"></textarea>'+
     '<input class="uline" id="ord-contact" placeholder="Your email or @handle" />'+
@@ -628,18 +633,19 @@ function renderOverlays(){
       const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join("  \u00B7  ");
       var lst=statusOf(w);
       h+='<div class="lb-inner" data-stop="1"><img data-act="lb-zoom" src="'+esc(imgSrc(w.image))+'" alt="'+esc(w.title)+'" />'+
-        '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div>'+(w.price?'<div class="price">'+esc(w.price)+'</div>':'')+(lst!=='available'?'<div class="status">'+(lst==='sold'?'Sold':'Reserved')+'</div>':'')+'</div>'+
-        '<div class="lb-actions"><button class="lb-btn" data-act="buy-open" data-kind="original">'+(lst==='sold'?'Enquire':'Request to buy')+'</button><button class="lb-btn ghost" data-act="buy-open" data-kind="print">Order a print</button></div>'+
+        '<div class="cap"><div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div>'+(w.price?'<div class="price">'+esc(w.price)+'</div>':'')+(lst==='sold'?'<div class="status">Sold</div>':'<div class="status" style="color:#cfe9d6">For sale</div>')+'</div>'+
+        '<div class="lb-actions"><button class="lb-btn" data-act="buy-open">Enquire</button></div>'+
         '</div></div>';
     }
   }
   if(state.buy){
-    const bl=filtered(), bw=bl[state.lightbox]||{}; const heading=state.buy.kind==='print'?'Order a print':'Request to buy';
-    h+='<div class="scrim" data-act="buy-close"></div><div class="modal"><h3>'+esc(heading)+'</h3>'+
+    const bl=filtered(), bw=bl[state.lightbox]||{};
+    h+='<div class="scrim" data-act="buy-close"></div><div class="modal"><h3>Enquire</h3>'+
       '<p>'+esc(bw.title||'Untitled')+(bw.year?(' \u00B7 '+esc(bw.year)):'')+(bw.medium?(' \u00B7 '+esc(materialLine(bw))):'')+'</p>'+
+      fld("Interested in",'<select class="input" id="buy-kind"><option value="original">Original artwork</option><option value="print">Print</option></select>')+
       '<textarea class="input" id="buy-msg" placeholder="Message (size, framing, questions)"></textarea>'+
       '<input class="input" id="buy-contact" placeholder="Your email or @handle" style="margin-top:10px" />'+
-      '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" data-act="buy-send">Send</button><button class="btn ghost" data-act="buy-close">Cancel</button></div></div>';
+      '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" data-act="buy-send">Send enquiry</button><button class="btn ghost" data-act="buy-close">Cancel</button></div></div>';
   }
   if(state.login){
     h+='<div class="scrim" data-act="login-close"></div><div class="modal"><h3>Admin login</h3>'+
@@ -746,7 +752,7 @@ function tabBulkReview(){
           '<input class="input" type="number" min="0" inputmode="decimal" data-bind="bulk.'+i+'.width" value="'+esc(b.width)+'" placeholder="W" style="width:72px;flex:none" />'+
           '<span class="mono" style="color:var(--graphite);font-size:11px">cm</span>'+
           '<input class="input" style="width:66px;flex:none" data-bind="bulk.'+i+'.year" value="'+esc(b.year)+'" placeholder="Year" /></div>'+
-        '<div style="display:flex;gap:6px"><select class="input" data-bind="bulk.'+i+'.status"><option value="available"'+((b.status||"available")==="available"?" selected":"")+'>Available</option><option value="sold"'+(b.status==="sold"?" selected":"")+'>Sold</option><option value="reserved"'+(b.status==="reserved"?" selected":"")+'>Reserved</option></select><input class="input" data-bind="bulk.'+i+'.price" value="'+esc(b.price||"")+'" placeholder="Price" style="flex:1" /></div>'+
+        '<div style="display:flex;gap:6px"><select class="input" data-bind="bulk.'+i+'.status"><option value="available"'+((b.status||"available")==="available"?" selected":"")+'>For sale</option><option value="sold"'+(b.status==="sold"?" selected":"")+'>Sold</option></select><input class="input" data-bind="bulk.'+i+'.price" value="'+esc(b.price||"")+'" placeholder="Price" style="flex:1" /></div>'+
         tagChipsFor(b.tags, "btag", 'data-i="'+i+'"')+
       '</div>'+
       '<div class="acts"><button class="sq" data-act="bulk-remove" data-i="'+i+'" title="Remove">'+ic("trash",14)+'</button></div></div>';
@@ -780,7 +786,7 @@ function tabWorkEditor(){
     '</div></div>'+
     fld("Year",'<input class="input" data-bind="editing.year" value="'+esc(e.year)+'" placeholder="2025" />')+
     '<div style="display:flex;gap:12px">'+
-      '<div style="flex:1">'+fld("Status",'<select class="input" data-bind="editing.status"><option value="available"'+((e.status||"available")==="available"?" selected":"")+'>Available</option><option value="sold"'+(e.status==="sold"?" selected":"")+'>Sold</option><option value="reserved"'+(e.status==="reserved"?" selected":"")+'>Reserved</option></select>')+'</div>'+
+      '<div style="flex:1">'+fld("Status",'<select class="input" data-bind="editing.status"><option value="available"'+((e.status||"available")==="available"?" selected":"")+'>For sale</option><option value="sold"'+(e.status==="sold"?" selected":"")+'>Sold</option></select>')+'</div>'+
       '<div style="flex:1">'+fld("Price",'<input class="input" data-bind="editing.price" value="'+esc(e.price||"")+'" placeholder="e.g. \u20AC450" />')+'</div>'+
     '</div>'+
     '<div class="fld"><span class="lab">Tags</span>'+tagChipsFor(e.tags, "etag")+
@@ -1013,9 +1019,9 @@ document.addEventListener('click', function(e){
     case "cv-add": { const k=el.getAttribute('data-key'); state.data.settings.cv[k].push({year:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
     case "cv-del": { const k=el.getAttribute('data-key'); const idx=parseInt(el.getAttribute('data-i'),10); state.data.settings.cv[k].splice(idx,1); saveDraft(); rerenderPanelBody(); break; }
     case "save-close": saveDraft(); state.panelOpen=false; renderApp(); toast("Saved"); break;
-    case "buy-open": { state.buy={kind:el.getAttribute("data-kind")}; renderOverlays(); break; }
+    case "buy-open": { state.buy={}; renderOverlays(); break; }
     case "buy-close": { state.buy=null; renderOverlays(); break; }
-    case "buy-send": { const bl=filtered(), bw=bl[state.lightbox]||{}; const kind=(state.buy&&state.buy.kind)||"original"; const msg=(document.getElementById("buy-msg")||{}).value||""; const con=(document.getElementById("buy-contact")||{}).value||""; if(!con.trim()){ alert("Please add your contact."); break; } const subj=(kind==="print"?"Print":"Buy")+": "+(bw.title||"Untitled")+(bw.year?(" ("+bw.year+")"):""); apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.buy=null; toast("Request sent"); renderOverlays(); } else alert("Could not send."); }).catch(function(){ alert("Could not send."); }); break; }
+    case "buy-send": { const bl=filtered(), bw=bl[state.lightbox]||{}; const kind=(document.getElementById("buy-kind")||{}).value||"original"; const msg=(document.getElementById("buy-msg")||{}).value||""; const con=(document.getElementById("buy-contact")||{}).value||""; if(!con.trim()){ alert("Please add your contact."); break; } const subj=(kind==="print"?"Print":"Original")+" enquiry: "+(bw.title||"Untitled")+(bw.year?(" ("+bw.year+")"):""); apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.buy=null; toast("Enquiry sent"); renderOverlays(); } else alert("Could not send."); }).catch(function(){ alert("Could not send."); }); break; }
     case "broadcast": { const subj=(document.getElementById("bc-subject")||{}).value||""; const msg=(document.getElementById("bc-message")||{}).value||""; if(!msg.trim()){ alert("Write a message first."); break; } if(!confirm("Send this email to all subscribers?")) break; toast("Sending\u2026"); apiSend("/api/broadcast","POST",{subject:subj,message:msg}).then(async function(r){ const j=await r.json().catch(function(){return{};}); if(r.ok){ toast("Sent to "+j.sent+"/"+j.total); } else { alert(j.error||"Could not send."); } }).catch(function(){ alert("Could not send."); }); break; }
     case "sub-del": { const em=el.getAttribute("data-id"); apiSend("/api/subscribers?email="+encodeURIComponent(em),"DELETE"); state.subscribers=(state.subscribers||[]).filter(function(x){return x.email!==em;}); rerenderPanelBody(); break; }
     case "order-send": { const subj=(document.getElementById("ord-subject")||{}).value||""; const msg=(document.getElementById("ord-message")||{}).value||""; const con=(document.getElementById("ord-contact")||{}).value||""; if(!msg.trim()||!con.trim()){ alert("Please add a message and your contact."); break; } apiSend("/api/order","POST",{subject:subj,message:msg,contact:con}).then(function(r){ if(r.ok){ state.orderSent=true; renderApp(); toast("Request sent"); } else { alert("Could not send \u2014 try again."); } }).catch(function(){ alert("Could not send \u2014 try again."); }); break; }
@@ -1071,7 +1077,7 @@ async function optimizeThumbs(force){
   optimizeThumbs._busy=false;
   if(done){ saveDraft(); renderAppKeepPanel(); toast("Previews ready ("+done+")"); }
 }
-function updateLightbox(){ const list=filtered(), w=list[state.lightbox]; if(!w) return; const im=document.querySelector('.lb-inner img'); if(im){ im.classList.remove('zoomed'); im.src=imgSrc(w.image); im.alt=w.title||''; } const cap=document.querySelector('.lb .cap'); if(cap){ const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join('  \u00B7  '); var lst=statusOf(w); cap.innerHTML='<div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div>'+(w.price?'<div class="price">'+esc(w.price)+'</div>':'')+(lst!=='available'?'<div class="status">'+(lst==='sold'?'Sold':'Reserved')+'</div>':''); } }
+function updateLightbox(){ const list=filtered(), w=list[state.lightbox]; if(!w) return; const im=document.querySelector('.lb-inner img'); if(im){ im.classList.remove('zoomed'); im.src=imgSrc(w.image); im.alt=w.title||''; } const cap=document.querySelector('.lb .cap'); if(cap){ const meta=[materialLine(w),sizeLine(w),w.year].concat(w.tags||[]).filter(Boolean).join('  \u00B7  '); var lst=statusOf(w); cap.innerHTML='<div class="t">'+esc(w.title)+'</div><div class="m">'+esc(meta)+'</div>'+(w.price?'<div class="price">'+esc(w.price)+'</div>':'')+(lst==='sold'?'<div class="status">Sold</div>':'<div class="status" style="color:#cfe9d6">For sale</div>'); } }
 function renderAppKeepPanel(){ const open=state.panelOpen; renderApp(); state.panelOpen=open; renderOverlays(); }
 /* ===== drag & drop reordering ===== */
 var dragKind=null, dragFrom=null;
