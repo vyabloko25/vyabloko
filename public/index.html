@@ -234,15 +234,15 @@ textarea.uline{ resize:vertical; min-height:72px; }
 /* hero */
 .hero{ position:relative; overflow:hidden; cursor:pointer; background:var(--ink); height:min(78vh,820px); margin-bottom:6px; }
 .hero-media{ position:absolute; inset:0; }
-.hero-media img{ width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.06); animation:kenburns 28s ease-in-out infinite alternate; }
-.hero-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(14,14,16,.66), rgba(14,14,16,.30) 55%, rgba(14,14,16,.40)); }
+.hero-media img{ width:100%; height:100%; object-fit:cover; object-position:50% 30%; display:block; animation:heropan 36s ease-in-out infinite alternate; }
+.hero-scrim{ position:absolute; inset:0; background:rgba(12,12,14, var(--hero-dim,.62)); }
 .hero-ov{ position:absolute; left:0; right:0; bottom:0; padding:46px 30px 40px; color:#fff; }
 .hero-name{ font-family:var(--font-display); text-transform:uppercase; font-weight:600; font-size:clamp(30px,6.4vw,74px); line-height:1; letter-spacing:.05em; }
 .hero-sub{ font-family:var(--font-mono); text-transform:uppercase; font-size:12px; letter-spacing:.18em; margin-top:14px; opacity:.92; }
 .hero-cue{ position:absolute; right:22px; top:20px; font-family:var(--font-mono); text-transform:uppercase; font-size:11px; letter-spacing:.14em; color:#fff; opacity:.85; }
-@keyframes kenburns{ from{ transform:scale(1.06) translate(0,0); } to{ transform:scale(1.16) translate(-1.5%,-1.5%); } }
-@media(max-width:640px){ .hero{ height:64vh; } .hero-ov{ padding:28px 18px 24px; } }
-@media(prefers-reduced-motion:reduce){ .hero-media img{ animation:none; transform:scale(1.02); } }
+@keyframes heropan{ from{ object-position:50% 0%; } to{ object-position:50% 100%; } }
+@media(max-width:640px){ .hero{ height:50vh; } .hero-ov{ padding:24px 16px 20px; } .hero-name{ font-size:clamp(26px,8vw,40px); } }
+@media(prefers-reduced-motion:reduce){ .hero-media img{ animation:none; object-position:50% 30%; } }
 /* card badges / sold / price / skeleton */
 .card-img{ position:relative; }
 .card-img::before{ content:""; position:absolute; inset:0; z-index:0; background:linear-gradient(100deg,#ece6da,#f5f0e7,#ece6da); background-size:200% 100%; animation:sk 1.4s ease-in-out infinite; }
@@ -275,6 +275,9 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .label .t{ text-transform:uppercase; letter-spacing:.04em; }
 /* keep long-form prose readable (mono, normal case) */
 .about-statement, .svc-item p, .contact .lead, .intro, .svc-intro{ text-transform:none; }
+.brand h1.brand-stacked{ display:flex; flex-direction:column; line-height:.84; font-weight:700; letter-spacing:.02em; font-size:16px; margin:0; }
+.brand h1.brand-stacked span{ display:block; }
+.subtitle{ display:none; }
 </style>
 </head>
 <body>
@@ -308,6 +311,7 @@ function gripIcon(s){ s=s||16; return '<svg width="'+s+'" height="'+s+'" viewBox
 /* helpers */
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function ed(path,multi){ return state.isAdmin ? (' data-edit="'+path+'" contenteditable="true" spellcheck="false"'+(multi?' data-multi="1"':'')) : ''; }
+function brandStack(nm){ var p=String(nm||"").trim().split(/\s+/); if(p.length>1){ var fst=p.shift(); return '<span>'+esc(fst)+'</span><span>'+esc(p.join(" "))+'</span>'; } return '<span>'+esc(nm||"")+'</span>'; }
 function contourSVG(){ var e=""; for(var i=1;i<=11;i++){ e+='<ellipse cx="28%" cy="34%" rx="'+(i*7)+'%" ry="'+(i*5)+'%"/>'; } for(var j=1;j<=11;j++){ e+='<ellipse cx="80%" cy="74%" rx="'+(j*6)+'%" ry="'+(j*8)+'%"/>'; } return '<svg width="100%" height="100%" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1">'+e+'</svg>'; }
 var ABOUT_TEXT={intro:`I'm Vasily. This is a selection of my projects from 2025 onward — recent work, experiments, and things I'm still developing.`,body:`I paint each work in a single session. The light belongs to that particular moment, and so does my own state while I'm painting. If there is a person in front of me, their mood becomes part of it too. Coming back the next day would mean seeing and painting something different.
 
@@ -402,11 +406,11 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false; if(s.theme.coverFrom==null) s.theme.coverFrom=""; if(!s.theme.styleV || s.theme.styleV<2){ if(!s.theme.accent || s.theme.accent==="#3B5C4A") s.theme.accent="#E5473C"; s.theme.styleV=2; } if(s.theme.styleV<3){ if(!s.theme.accent || s.theme.accent==="#3B5C4A" || s.theme.accent==="#E5473C") s.theme.accent="#E24A6A"; s.theme.styleV=3; } if(s.theme.styleV<4){ if(!s.theme.font || s.theme.font==="editorial") s.theme.font="typewriter"; s.theme.styleV=4; } if(!s.aboutV || s.aboutV<3){ if(!s.about) s.about={photoPos:{x:50,y:50},photo:""}; s.about.intro=""; s.about.body=ABOUT_TEXT.intro+"\n\n"+ABOUT_TEXT.body; s.aboutV=3; }
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false; if(s.theme.coverFrom==null) s.theme.coverFrom=""; if(s.theme.heroDim==null) s.theme.heroDim=62; if(s.theme.heroWorkId==null) s.theme.heroWorkId=""; if(!s.theme.styleV || s.theme.styleV<2){ if(!s.theme.accent || s.theme.accent==="#3B5C4A") s.theme.accent="#E5473C"; s.theme.styleV=2; } if(s.theme.styleV<3){ if(!s.theme.accent || s.theme.accent==="#3B5C4A" || s.theme.accent==="#E5473C") s.theme.accent="#E24A6A"; s.theme.styleV=3; } if(s.theme.styleV<4){ if(!s.theme.font || s.theme.font==="editorial") s.theme.font="typewriter"; s.theme.styleV=4; } if(!s.aboutV || s.aboutV<3){ if(!s.about) s.about={photoPos:{x:50,y:50},photo:""}; s.about.intro=""; s.about.body=ABOUT_TEXT.intro+"\n\n"+ABOUT_TEXT.body; s.aboutV=3; }
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
-  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Experimental artist from Berlin"; if(s.labels.services==null||s.labels.services==="Services") s.labels.services="Commissions"; if(!s.services) s.services={intro:"I take commissions \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."}]}; if(!s.servicesV || s.servicesV<2){ if(s.services){ s.services.items=(s.services.items||[]).filter(function(it){ return !/lesson|\u0443\u0440\u043E\u043A/i.test((it&&it.title)||""); }); if(/lessons?/i.test(s.services.intro||"")) s.services.intro="I take commissions \u2014 tell me what you have in mind."; } s.servicesV=2; }
+  if(!s.labels) s.labels={}; if(s.labels.work==null) s.labels.work="Work"; if(s.labels.about==null) s.labels.about="About"; if(s.labels.contact==null) s.labels.contact="Contact"; if(s.labels.signup==null) s.labels.signup="Get updates by email"; if(s.subtitle==null) s.subtitle="Berlin based experimental artist"; if(s.subtitle==="Experimental artist from Berlin") s.subtitle="Berlin based experimental artist"; if(s.labels.services==null||s.labels.services==="Services") s.labels.services="Commissions"; if(!s.services) s.services={intro:"I take commissions \u2014 tell me what you have in mind.",items:[{title:"Painting on commission",text:"A piece made for you; subject, size and palette agreed together."}]}; if(!s.servicesV || s.servicesV<2){ if(s.services){ s.services.items=(s.services.items||[]).filter(function(it){ return !/lesson|\u0443\u0440\u043E\u043A/i.test((it&&it.title)||""); }); if(/lessons?/i.test(s.services.intro||"")) s.services.intro="I take commissions \u2014 tell me what you have in mind."; } s.servicesV=2; }
   (d.works||[]).forEach(function(w){
     if(!Array.isArray(w.tags)){ w.tags = w.category ? [w.category] : []; }
     if(w.size==null) w.size="";
@@ -498,7 +502,7 @@ function faviconHref(){
   return "data:image/svg+xml,"+encodeURIComponent(svg);
 }
 function applyFavicon(){ let l=document.getElementById('favicon'); if(!l){ l=document.createElement('link'); l.id='favicon'; l.rel='icon'; document.head.appendChild(l); } l.type='image/svg+xml'; l.href=faviconHref(); }
-function applyTheme(){ const t=(state.data.settings.theme)||{}; const r=document.documentElement; if(t.accent) r.style.setProperty('--accent',t.accent); r.style.setProperty('--cols',String(t.columns||3)); const fp=FONTS[t.font]||FONTS.editorial; r.style.setProperty('--font-display',fp.ds); r.style.setProperty('--font-body',fp.bs); r.style.setProperty('--font-mono',"'Space Mono',monospace"); const ts=({S:0.9,M:1,L:1.14,XL:1.3})[t.textSize||'M']||1; r.style.setProperty('--tscale',String(ts)); ensureFonts(fp); applyFavicon(); }
+function applyTheme(){ const t=(state.data.settings.theme)||{}; const r=document.documentElement; if(t.accent) r.style.setProperty('--accent',t.accent); r.style.setProperty('--cols',String(t.columns||3)); const fp=FONTS[t.font]||FONTS.editorial; r.style.setProperty('--font-display',fp.ds); r.style.setProperty('--font-body',fp.bs); r.style.setProperty('--font-mono',"'Space Mono',monospace"); const ts=({S:0.9,M:1,L:1.14,XL:1.3})[t.textSize||'M']||1; r.style.setProperty('--tscale',String(ts)); r.style.setProperty('--hero-dim', String(((parseFloat(t.heroDim)||62))/100)); ensureFonts(fp); applyFavicon(); }
 /* boot */
 async function boot(){
   try{ const doc=await apiGet('/api/data'); state.data=migrate(doc); }catch(e){ state.data=migrate(SEED()); }
@@ -528,7 +532,7 @@ function renderApp(){
       '</div></div>';
   }
   const logo = (s.theme&&s.theme.logo)?('<span class="mark">'+esc(s.theme.logo)+'</span>'):'';
-  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1'+ed('settings.siteName')+'>'+esc(s.siteName)+'</h1>'+((s.subtitle||state.isAdmin)?'<div class="subtitle"'+ed('settings.subtitle')+'>'+esc(s.subtitle||'')+'</div>':'')+'</div></div>'+
+  html+='<header class="bar"><div class="brand" data-act="home">'+logo+'<div class="brandtext"><h1 class="brand-stacked">'+brandStack(s.siteName)+'</h1></div></div>'+
     '<div class="nav"><div class="navlinks">'+navlink("work",lbl("work","Work"))+navlink("about",lbl("about","About"))+navlink("contact",lbl("contact","Contact"))+navlink("services",lbl("services","Commissions"))+'</div>'+
     '<button class="iconbtn burger" data-act="burger">'+ic("menu",16)+'</button></div></header>';
   if(state.mobileNav){ html+='<nav class="mobile-nav"><a data-act="go" data-v="work">'+esc(lbl("work","Work"))+'</a><a data-act="go" data-v="about">'+esc(lbl("about","About"))+'</a><a data-act="go" data-v="contact">'+esc(lbl("contact","Contact"))+'</a><a data-act="go" data-v="services">'+esc(lbl("services","Commissions"))+'</a></nav>'; }
@@ -547,7 +551,7 @@ function renderApp(){
 }
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
-  const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const feat=all[0];
+  const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const hid=(state.data.settings.theme&&state.data.settings.theme.heroWorkId)||""; const feat=(hid&&all.filter(function(w){return w.id===hid;})[0])||all[0];
   let h='';
   if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><div class="hero-media"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /></div><div class="hero-scrim"></div><div class="hero-ov"><div class="hero-name">'+esc(state.data.settings.siteName)+'</div>'+(state.data.settings.subtitle?'<div class="hero-sub">'+esc(state.data.settings.subtitle)+'</div>':'')+'</div><div class="hero-cue">'+esc(lbl("work","Work"))+' \u2193</div></section>'; }
   h+='<div class="sec-head" style="padding-top:40px"><div class="filters">';
@@ -926,6 +930,9 @@ function tabSettings(){
     '<div class="fld"><span class="lab">Fonts</span>'+fonts+'</div>'+
     '<div class="fld"><span class="lab">Text size (all text blocks)</span>'+tsize+'</div>'+
     '<div class="fld"><span class="lab">Grid columns (desktop)</span>'+cols+'</div>'+
+    '<div class="eyebrow" style="margin:18px 0 12px">Cover (hero)</div>'+
+    '<div class="fld"><span class="lab">Cover image</span><div class="tagwrap"><select class="input" data-bind="data.settings.theme.heroWorkId"><option value="">First work</option>'+(state.data.works||[]).map(function(w){ return '<option value="'+esc(w.id)+'"'+((t.heroWorkId===w.id)?' selected':'')+'>'+esc(w.title||'Untitled')+'</option>'; }).join('')+'</select></div></div>'+
+    '<div class="fld"><span class="lab">Cover darkness</span><input type="range" min="0" max="85" step="5" data-bind="data.settings.theme.heroDim" value="'+esc(String(t.heroDim!=null?t.heroDim:62))+'" style="width:220px" /></div>'+
     '<div class="fld"><span class="lab">Email signup on Contact</span><div class="tagwrap">'+signup+'</div></div>'+
     fld("Header symbol (emoji or text \u2014 leave empty to remove)",'<input class="input" data-bind="data.settings.theme.logo" value="'+esc(t.logo||"")+'" placeholder="e.g. \uD83C\uDF4F or V. or empty" style="width:220px" />')+
     '<div class="fld"><span class="lab">Favicon (browser tab icon)</span>'+
