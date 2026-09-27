@@ -232,13 +232,12 @@ textarea.uline{ resize:vertical; min-height:72px; }
 @media(max-width:640px){ .about-photo2{ width:145px; max-width:46%; margin:2px 18px 12px 0; } .about-cv{ grid-template-columns:1fr; } }
 
 /* hero */
-.hero{ position:relative; height:min(74vh,780px); margin-bottom:6px; overflow:hidden; cursor:pointer; background:var(--card); }
-.hero img{ width:100%; height:100%; object-fit:cover; display:block; }
-.hero-ov{ position:absolute; left:0; right:0; bottom:0; padding:44px 26px 34px; background:linear-gradient(to top, rgba(18,18,20,.6), rgba(18,18,20,0)); color:#fff; }
-.hero-name{ font-family:var(--font-display); font-weight:500; font-size:clamp(34px,7vw,86px); line-height:.98; letter-spacing:-.02em; }
-.hero-sub{ font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-top:12px; opacity:.92; }
-.hero-cue{ position:absolute; right:22px; top:20px; color:#fff; font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; opacity:.85; }
-@media(max-width:640px){ .hero{ height:62vh; } .hero-ov{ padding:26px 20px 22px; } }
+.hero{ position:relative; cursor:pointer; background:var(--card); border-bottom:1px solid var(--line); margin-bottom:6px; }
+.hero-frame{ height:min(64vh,700px); display:flex; align-items:center; justify-content:center; padding:20px; }
+.hero-frame img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
+.hero-cap{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:12px 22px 16px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); }
+.hero-cap .hn{ color:var(--ink); }
+@media(max-width:640px){ .hero-frame{ height:56vh; padding:12px; } .hero-cap{ padding:10px 16px 14px; } }
 /* card badges / sold / price / skeleton */
 .card-img{ position:relative; }
 .card-img::before{ content:""; position:absolute; inset:0; z-index:0; background:linear-gradient(100deg,#ece6da,#f5f0e7,#ece6da); background-size:200% 100%; animation:sk 1.4s ease-in-out infinite; }
@@ -532,7 +531,7 @@ function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(sta
 function viewWork(){
   const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const feat=all[0];
   let h='';
-  if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /><div class="hero-ov"><div class="hero-name">'+esc(state.data.settings.siteName)+'</div>'+(state.data.settings.subtitle?'<div class="hero-sub">'+esc(state.data.settings.subtitle)+'</div>':'')+'</div><div class="hero-cue">'+esc(lbl("work","Work"))+' \u2193</div></section>'; }
+  if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><div class="hero-frame"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /></div><div class="hero-cap"><span class="hn">'+esc(feat.title||'')+(feat.year?(' \u00B7 '+esc(feat.year)):'')+'</span><span class="hc">View \u2193</span></div></section>'; }
   h+='<div class="sec-head" style="padding-top:40px"><div class="filters">';
   var PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"]; tagList().forEach(function(c,idx){ var col=(c==="All")?"var(--ink)":PAL[(idx-1)%5]; var on=state.tag===c; var st=on?("background:"+col+";border-color:"+col+";color:#fff"):("color:"+col+";border-color:"+col); h+='<button class="chip'+(on?" on":"")+'" data-act="tagf" data-c="'+esc(c)+'" style="'+st+'">'+esc(c)+'</button>'; });
   h+='</div></div>';
