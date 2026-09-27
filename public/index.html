@@ -922,7 +922,6 @@ function tabSettings(){
     fld("About section",'<input class="input" data-bind="data.settings.labels.about" value="'+esc(L.about||"About")+'" />')+
     fld("Contact section",'<input class="input" data-bind="data.settings.labels.contact" value="'+esc(L.contact||"Contact")+'" />')+
     fld("Services section",'<input class="input" data-bind="data.settings.labels.services" value="'+esc(L.services||"Commissions")+'" />')+
-    fld("Email signup heading",'<input class="input" data-bind="data.settings.labels.signup" value="'+esc(L.signup||"Get updates by email")+'" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save titles</button>'+
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
     '<div class="eyebrow" style="margin-bottom:12px">Appearance</div>'+
@@ -933,7 +932,6 @@ function tabSettings(){
     '<div class="eyebrow" style="margin:18px 0 12px">Cover (hero)</div>'+
     '<div class="fld"><span class="lab">Cover image</span><div class="tagwrap"><select class="input" data-bind="data.settings.theme.heroWorkId"><option value="">First work</option>'+(state.data.works||[]).map(function(w){ return '<option value="'+esc(w.id)+'"'+((t.heroWorkId===w.id)?' selected':'')+'>'+esc(w.title||'Untitled')+'</option>'; }).join('')+'</select></div></div>'+
     '<div class="fld"><span class="lab">Cover darkness</span><input type="range" min="0" max="85" step="5" data-bind="data.settings.theme.heroDim" value="'+esc(String(t.heroDim!=null?t.heroDim:62))+'" style="width:220px" /></div>'+
-    '<div class="fld"><span class="lab">Email signup on Contact</span><div class="tagwrap">'+signup+'</div></div>'+
     fld("Header symbol (emoji or text \u2014 leave empty to remove)",'<input class="input" data-bind="data.settings.theme.logo" value="'+esc(t.logo||"")+'" placeholder="e.g. \uD83C\uDF4F or V. or empty" style="width:220px" />')+
     '<div class="fld"><span class="lab">Favicon (browser tab icon)</span>'+
       '<input class="input" data-bind="data.settings.theme.favicon" value="'+esc(t.favicon||"")+'" placeholder="emoji or single letter (empty = site initial)" style="width:260px" />'+

@@ -1,49 +1,48 @@
-// Injects title + Open Graph/Twitter meta into HTML responses, read from D1,
-// so link previews in messengers (which read raw HTML, not JS) work and stay editable.
-
-function attr(v) {
-  return String(v == null ? "" : v)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
 export async function onRequest(context) {
-  const { request, next, env } = context;
+  const { request, env, next } = context;
   const res = await next();
   const ct = res.headers.get("content-type") || "";
   if (!ct.includes("text/html")) return res;
 
-  let s = null, works = [];
+  let s = {}, works = [];
   try {
     const row = await env.DB.prepare("SELECT json FROM site WHERE id=1").first();
     if (row && row.json) {
-      const doc = JSON.parse(row.json);
-      s = doc.settings || {};
-      works = doc.works || [];
+      const d = JSON.parse(row.json);
+      s = d.settings || {};
+      works = (d.works || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
     }
   } catch (e) {}
-  if (!s) return res;
 
   const origin = new URL(request.url).origin;
-  const title = s.siteName || "Portfolio";
-  const desc = s.subtitle || (s.about && s.about.intro) || s.role || "";
-  let img = (s.about && s.about.photo) || (works[0] && works[0].image) || "";
-  if (img && img.charAt(0) === "/") img = origin + img;
+  const base = "https://img.vyabloko.art";
+  const t = s.theme || {};
+  const hid = t.heroWorkId || "";
+  const feat = (hid && works.find((w) => w.id === hid)) || works[0];
+  let img = (feat && feat.image) || (s.about && s.about.photo) || "";
+  if (img) {
+    if (img.indexOf("/img/") === 0) img = base + img.slice(4);
+    else if (img.charAt(0) === "/") img = origin + img;
+  }
+  const title = s.siteName || "Vasily Yablokov";
+  const desc = s.subtitle || "";
+  const esc = (x) => String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-  const tags =
-    '<meta property="og:title" content="' + attr(title) + '">' +
+  let tags =
     '<meta property="og:type" content="website">' +
-    '<meta property="og:site_name" content="' + attr(title) + '">' +
-    '<meta property="og:url" content="' + attr(origin + "/") + '">' +
-    (desc ? '<meta property="og:description" content="' + attr(desc) + '">' : "") +
-    (img ? '<meta property="og:image" content="' + attr(img) + '">' : "") +
-    '<meta name="twitter:card" content="' + (img ? "summary_large_image" : "summary") + '">' +
-    '<meta name="twitter:title" content="' + attr(title) + '">' +
-    (desc ? '<meta name="twitter:description" content="' + attr(desc) + '">' : "") +
-    (img ? '<meta name="twitter:image" content="' + attr(img) + '">' : "");
+    '<meta property="og:site_name" content="' + esc(title) + '">' +
+    '<meta property="og:title" content="' + esc(title) + '">' +
+    (desc ? '<meta property="og:description" content="' + esc(desc) + '">' : "") +
+    (img ? '<meta property="og:image" content="' + esc(img) + '">' : "") +
+    '<meta property="og:url" content="' + esc(origin) + '">' +
+    '<meta name="twitter:card" content="summary_large_image">' +
+    '<meta name="twitter:title" content="' + esc(title) + '">' +
+    (desc ? '<meta name="twitter:description" content="' + esc(desc) + '">' : "") +
+    (img ? '<meta name="twitter:image" content="' + esc(img) + '">' : "");
 
   return new HTMLRewriter()
-    .on("title", { element(e) { e.setInnerContent(title); } })
-    .on('meta[name="description"]', { element(e) { if (desc) e.setAttribute("content", desc); } })
-    .on("head", { element(e) { e.append(tags, { html: true }); } })
+    .on('meta[property^="og:"]', { element(el) { el.remove(); } })
+    .on('meta[name^="twitter:"]', { element(el) { el.remove(); } })
+    .on("head", { element(el) { el.append(tags, { html: true }); } })
     .transform(res);
 }

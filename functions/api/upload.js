@@ -9,7 +9,7 @@ export async function onRequestPost({ request, env }) {
   const mime = m[1];
   const bytes = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
   const ext = mime.indexOf("png") > -1 ? "png" : mime.indexOf("webp") > -1 ? "webp" : mime.indexOf("svg") > -1 ? "svg" : "jpg";
-  const key = "w/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + "." + ext;
+  const key = (body.key && /^[a-zA-Z0-9._\/-]{1,80}$/.test(body.key)) ? body.key : ("w/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + "." + ext);
   await env.BUCKET.put(key, bytes, { httpMetadata: { contentType: mime } });
   return json({ key, url: "/img/" + key });
 }

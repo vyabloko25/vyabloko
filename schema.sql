@@ -1,1 +1,3 @@
 CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, json TEXT);
+CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, subject TEXT, message TEXT, contact TEXT, created_at INTEGER);
+CREATE TABLE IF NOT EXISTS subscribers (email TEXT PRIMARY KEY, created_at INTEGER);

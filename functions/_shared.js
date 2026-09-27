@@ -69,7 +69,7 @@ export function DEFAULT_DOC() {
       subtitle: "Experimental artist from Berlin",
       domain: "vyabloko.art",
       labels: { work: "Work", about: "About", contact: "Contact", signup: "Get updates by email" },
-      theme: { accent: "#3B5C4A", columns: 3, showSignup: true, textSize: "M", font: "editorial", logo: "\uD83C\uDF4F", favicon: "\uD83C\uDF4F", faviconImg: "" },
+      theme: { accent: "#3B5C4A", columns: 3, showSignup: true, textSize: "M", font: "editorial", logo: "\uD83C\uDF4F", favicon: "\uD83C\uDF4F", faviconImg: "", imgBase: "", imgResize: false },
       about: {
         photo: "",
         photoPos: { x: 50, y: 50 },
@@ -94,4 +94,24 @@ export function DEFAULT_DOC() {
     },
     works: [],
   };
+}
+
+export async function sha256hex(str) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  const a = new Uint8Array(b); let out = "";
+  for (let i = 0; i < a.length; i++) out += a[i].toString(16).padStart(2, "0");
+  return out;
+}
+export function randHex(n) {
+  const a = new Uint8Array(n || 16); crypto.getRandomValues(a); let out = "";
+  for (let i = 0; i < a.length; i++) out += a[i].toString(16).padStart(2, "0");
+  return out;
+}
+export async function currentPasswordOK(pw, env) {
+  if (pw == null) return false;
+  try {
+    const row = await env.DB.prepare("SELECT json FROM site WHERE id=2").first();
+    if (row && row.json) { const a = JSON.parse(row.json); if (a && a.hash && a.salt) { const h = await sha256hex(a.salt + ":" + pw); return h === a.hash; } }
+  } catch (e) {}
+  return env.ADMIN_PASSWORD ? (pw === env.ADMIN_PASSWORD) : false;
 }
