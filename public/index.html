@@ -17,7 +17,7 @@
 <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Ctext%20x%3D%2716%27%20y%3D%2725%27%20font-size%3D%2727%27%20text-anchor%3D%27middle%27%3E%F0%9F%8D%8F%3C%2Ftext%3E%3C%2Fsvg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{ --paper:#F7F3EA; --ink:#1A1A1C; --graphite:#6E6E66; --line:#E7E2D6; --accent:#E24A6A; --card:#FFFFFF; --cols:3; --c1:#E24A6A; --c2:#F2B33A; --c3:#7FB03A; --c4:#2F86B0; --c5:#D8412F; --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans',system-ui,sans-serif; --font-mono:'Space Mono',monospace; --tscale:1; }
 *,*::before,*::after{ box-sizing:border-box; }
@@ -258,6 +258,18 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .about-statement::first-line{ font-weight:600; }
 /* type rhythm */
 .sec-head{ align-items:center; }
+
+/* typewriter / uppercase titles */
+.brand h1{ text-transform:uppercase; letter-spacing:.05em; font-size:19px; font-weight:600; }
+.sec-head h2{ text-transform:uppercase; letter-spacing:.01em; }
+.card .cap .ct{ text-transform:uppercase; letter-spacing:.04em; font-size:calc(13px * var(--tscale)); font-weight:600; }
+.lb .cap .t{ text-transform:uppercase; letter-spacing:.04em; }
+.modal h3, .panel-head h3{ text-transform:uppercase; letter-spacing:.03em; }
+.svc-item h3{ text-transform:uppercase; letter-spacing:.03em; }
+.cv-block h3{ text-transform:uppercase; letter-spacing:.06em; }
+.label .t{ text-transform:uppercase; letter-spacing:.04em; }
+/* keep long-form prose readable (mono, normal case) */
+.about-statement, .svc-item p, .contact .lead, .intro, .svc-intro{ text-transform:none; }
 </style>
 </head>
 <body>
@@ -385,7 +397,7 @@ function migrate(d){
   if(!d||!d.settings) return d; const s=d.settings;
   if(!Array.isArray(s.tags)) s.tags = Array.isArray(s.categories) ? s.categories.slice() : [];
   if(!s.theme) s.theme={}; if(s.theme.accent==null) s.theme.accent="#3B5C4A"; if(s.theme.columns==null) s.theme.columns=3; if(s.theme.showSignup==null) s.theme.showSignup=true;
-  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false; if(s.theme.coverFrom==null) s.theme.coverFrom=""; if(!s.theme.styleV || s.theme.styleV<2){ if(!s.theme.accent || s.theme.accent==="#3B5C4A") s.theme.accent="#E5473C"; s.theme.styleV=2; } if(s.theme.styleV<3){ if(!s.theme.accent || s.theme.accent==="#3B5C4A" || s.theme.accent==="#E5473C") s.theme.accent="#E24A6A"; s.theme.styleV=3; } if(!s.aboutV || s.aboutV<3){ if(!s.about) s.about={photoPos:{x:50,y:50},photo:""}; s.about.intro=""; s.about.body=ABOUT_TEXT.intro+"\n\n"+ABOUT_TEXT.body; s.aboutV=3; }
+  if(s.theme.font==null) s.theme.font="editorial"; if(s.theme.logo==null) s.theme.logo="\uD83C\uDF4F"; if(s.theme.favicon==null) s.theme.favicon="\uD83C\uDF4F"; if(s.theme.faviconImg==null) s.theme.faviconImg=""; if(s.theme.textSize==null) s.theme.textSize="M"; if(s.theme.imgBase==null) s.theme.imgBase=""; if(s.theme.imgResize==null) s.theme.imgResize=false; if(s.theme.coverFrom==null) s.theme.coverFrom=""; if(!s.theme.styleV || s.theme.styleV<2){ if(!s.theme.accent || s.theme.accent==="#3B5C4A") s.theme.accent="#E5473C"; s.theme.styleV=2; } if(s.theme.styleV<3){ if(!s.theme.accent || s.theme.accent==="#3B5C4A" || s.theme.accent==="#E5473C") s.theme.accent="#E24A6A"; s.theme.styleV=3; } if(s.theme.styleV<4){ if(!s.theme.font || s.theme.font==="editorial") s.theme.font="typewriter"; s.theme.styleV=4; } if(!s.aboutV || s.aboutV<3){ if(!s.about) s.about={photoPos:{x:50,y:50},photo:""}; s.about.intro=""; s.about.body=ABOUT_TEXT.intro+"\n\n"+ABOUT_TEXT.body; s.aboutV=3; }
   if(!s.about) s.about={intro:"",body:""}; if(s.about.photo==null) s.about.photo=""; if(!s.about.photoPos) s.about.photoPos={x:50,y:50};
   if(!Array.isArray(s.mediums)) s.mediums=["Oil","Acrylic","Gouache","Watercolour","Ink","Coloured pencil","Graphite","Charcoal","Linocut","Mixed media"];
   if(!Array.isArray(s.supports)) s.supports=["Canvas","Linen canvas","Unstretched canvas","Paper","Wood panel","Board","Ceramic","Wall"];
@@ -452,6 +464,7 @@ function updatePubInfo(){ const el=document.getElementById('pubinfo'); if(!el) r
 function password(){ return lsGet(LS_PW) || "1204"; }
 function isCabinet(){ const p=location.pathname.replace(/\/+$/,''); return location.hash.replace('#','').toLowerCase()==='cabinet' || p.toLowerCase().indexOf('/cabinet')>-1; }
 var FONTS={
+  typewriter:{d:"JetBrains Mono",b:"JetBrains Mono",ds:"'JetBrains Mono',ui-monospace,monospace",bs:"'JetBrains Mono',ui-monospace,monospace"},
   rounded:{d:"Quicksand",b:"Nunito Sans",ds:"'Quicksand',system-ui,sans-serif",bs:"'Nunito Sans',system-ui,sans-serif"},
   editorial:{d:"Fraunces",b:"Instrument Sans",ds:"'Fraunces',Georgia,serif",bs:"'Instrument Sans',system-ui,sans-serif"},
   grotesk:{d:"Space Grotesk",b:"Inter",ds:"'Space Grotesk',system-ui,sans-serif",bs:"'Inter',system-ui,sans-serif"},
@@ -882,9 +895,9 @@ function tabSettings(){
   [2,3,4].forEach(function(n){ cols+='<button class="tagpick '+((t.columns||3)===n?'on':'')+'" data-act="cols" data-c="'+n+'">'+n+'</button>'; });
   cols+='</div>';
   const signup='<button class="tagpick '+(t.showSignup!==false?'on':'')+'" data-act="toggle-signup">'+(t.showSignup!==false?'Shown':'Hidden')+'</button>';
-  const fontNames={editorial:"Editorial (Fraunces)",rounded:"Rounded (Quicksand)",grotesk:"Grotesk (Space Grotesk)",classic:"Classic (Playfair)",garamond:"Garamond (Cormorant)",archivo:"Archivo"};
+  const fontNames={typewriter:"Typewriter (JetBrains Mono)",editorial:"Editorial (Fraunces)",rounded:"Rounded (Quicksand)",grotesk:"Grotesk (Space Grotesk)",classic:"Classic (Playfair)",garamond:"Garamond (Cormorant)",archivo:"Archivo"};
   let fonts='<div class="tagwrap">';
-  ["editorial","rounded","grotesk","classic","garamond","archivo"].forEach(function(k){ fonts+='<button class="tagpick '+((t.font||"editorial")===k?'on':'')+'" data-act="font" data-c="'+k+'">'+esc(fontNames[k])+'</button>'; });
+  ["typewriter","editorial","rounded","grotesk","classic","garamond","archivo"].forEach(function(k){ fonts+='<button class="tagpick '+((t.font||"editorial")===k?'on':'')+'" data-act="font" data-c="'+k+'">'+esc(fontNames[k])+'</button>'; });
   fonts+='</div>';
   let tsize='<div class="tagwrap">'; ["S","M","L","XL"].forEach(function(o){ tsize+='<button class="tagpick '+((t.textSize||"M")===o?'on':'')+'" data-act="tsize" data-c="'+o+'">'+o+'</button>'; }); tsize+='</div>';
   const favImg = t.faviconImg ? '<div style="margin-top:8px;display:flex;gap:8px;align-items:center"><img src="'+esc(t.faviconImg)+'" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid var(--line)" /><button class="btn ghost mini" data-act="favicon-pick">Replace image</button><button class="btn ghost mini" data-act="favicon-imgdel">Remove image</button></div>' : '<div style="margin-top:8px"><button class="btn ghost mini" data-act="favicon-pick">'+ic("upload",13)+' Upload favicon image</button></div>';
