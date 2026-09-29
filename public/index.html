@@ -278,6 +278,12 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .brand h1.brand-stacked{ display:flex; flex-direction:column; line-height:.84; font-weight:700; letter-spacing:.02em; font-size:16px; margin:0; }
 .brand h1.brand-stacked span{ display:block; }
 .subtitle{ display:none; }
+@media(max-width:640px){
+  .lb-x, .lb-nav{ border:none; background:transparent; text-shadow:0 1px 6px rgba(0,0,0,.55); }
+  .lb-nav:hover{ background:transparent; }
+  .lb-x{ top:14px; right:12px; }
+  .lb-prev{ left:4px; } .lb-next{ right:4px; }
+}
 </style>
 </head>
 <body>
@@ -595,13 +601,8 @@ function viewAbout(){
     '</div></div>';
 }
 function viewContact(){
-  const s=state.data.settings, c=s.contact, showSignup=!(s.theme&&s.theme.showSignup===false);
+  const s=state.data.settings, c=s.contact;
   let signup="";
-  if(showSignup){
-    signup='<div class="eyebrow" style="margin-bottom:12px">'+esc(lbl("signup","New work by email \u2014 about every 2 months"))+'</div>'+
-      (state.news?'<div class="news-ok">'+ic("check",16)+' Thanks \u2014 you\u2019ll hear from me.</div>'
-        :'<div class="news"><input id="news-email" type="email" placeholder="you@email.com" aria-label="Email address" /><button data-act="subscribe">Send '+ic("cr",14)+'</button></div>');
-  }
   return '<div class="sec-head" style="padding-top:40px"></div><div class="contact"><p class="lead"'+ed('settings.contact.note',1)+'>'+esc(c.note)+'</p>'+
     '<div class="clist">'+
     '<div class="crow"><span class="ico">'+ic("ig",18)+'</span><span class="k">Instagram</span><a class="v" href="'+esc(igUrl(c))+'" target="_blank" rel="noreferrer">@'+esc(c.instagram)+'</a></div>'+
@@ -676,7 +677,7 @@ function renderOverlays(){
 }
 /* ===== render: admin ===== */
 function renderPanel(){
-  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Commissions"],["orders","Orders"],["subscribers","Subscribers"],["settings","Settings"]];
+  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Commissions"],["orders","Orders"],["settings","Settings"]];
   let h='<div class="panel" role="dialog" aria-label="Manage site"><div class="panel-head"><h3>Manage site</h3>'+
     '<button class="iconbtn" data-act="panel-close">'+ic("x",16)+'</button></div><div class="tabs">';
   tabs.forEach(function(t){ h+='<button class="tab '+(state.panelTab===t[0]?"on":"")+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>'; });
@@ -690,7 +691,6 @@ function panelBody(){
   if(state.panelTab==="contact") return tabContact();
   if(state.panelTab==="services") return tabServices();
   if(state.panelTab==="orders") return tabOrders();
-  if(state.panelTab==="subscribers") return tabSubscribers();
   if(state.panelTab==="settings") return tabSettings();
   return "";
 }
@@ -982,7 +982,7 @@ document.addEventListener('click', function(e){
     case "logout": apiSend("/api/logout","POST",{}); location.href="/"; break;
     case "panel": state.panelOpen=true; renderOverlays(); break;
     case "panel-close": state.panelOpen=false; state.editing=null; state.bulk=null; renderApp(); break;
-    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); if(state.panelTab==="orders") loadOrders(); if(state.panelTab==="subscribers") loadSubscribers(); break;
+    case "tab": state.panelTab=el.getAttribute('data-t'); state.editing=null; state.bulk=null; rerenderPanelBody(); if(state.panelTab==="orders") loadOrders(); break;
     case "export": exportData(); break;
     case "publish": exportData(true); state.publish=true; renderOverlays(); break;
     case "publish-close": state.publish=false; renderOverlays(); break;
