@@ -285,6 +285,11 @@ textarea.uline{ resize:vertical; min-height:72px; }
   .lb-x{ top:14px; right:12px; }
   .lb-prev{ left:12px; } .lb-next{ right:12px; }
 }
+.series-head{ display:flex; align-items:baseline; gap:16px; padding:34px 0 20px; flex-wrap:wrap; }
+.series-back{ background:none; border:none; cursor:pointer; font-family:var(--font-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--graphite); display:inline-flex; align-items:center; gap:6px; padding:0; }
+.series-back:hover{ color:var(--accent); }
+.series-title{ font-family:var(--font-display); text-transform:uppercase; letter-spacing:.02em; font-size:clamp(20px,3vw,30px); margin:0; font-weight:600; }
+.series-year{ font-family:var(--font-mono); font-size:12px; color:var(--graphite); letter-spacing:.08em; }
 </style>
 </head>
 <body>
@@ -434,6 +439,9 @@ function migrate(d){
   ws.forEach(function(w,i){ if(typeof w.order!=="number") w.order=i; });
   ws.sort(function(a,b){ return a.order-b.order; });
   ws.forEach(function(w,i){ w.order=i; });
+  if(!Array.isArray(d.series)) d.series=[];
+  if(!s.seriesV || s.seriesV<1){ if(d.series.length===0 && (d.works||[]).length){ var _sid='s_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); d.series.push({id:_sid,name:"Works",year:"",coverWorkId:"",order:0}); (d.works||[]).forEach(function(w){ if(!w.seriesId) w.seriesId=_sid; }); } s.seriesV=1; }
+  (d.series||[]).forEach(function(se,i){ if(typeof se.order!=='number') se.order=i; if(se.coverWorkId==null) se.coverWorkId=''; if(se.year==null) se.year=''; });
   return d;
 }
 /* state */
@@ -441,7 +449,7 @@ const state = {
   data:null, view:"work", tag:"All", mobileNav:false,
   isAdmin:false, panelOpen:false, panelTab:"works",
   editing:null, bulk:null, bulkLoading:null, lightbox:null,
-  login:false, loginErr:false, news:false, publish:false, orderSent:false, orders:null, buy:null, subscribers:null
+  login:false, loginErr:false, news:false, publish:false, orderSent:false, orders:null, buy:null, subscribers:null, openSeries:null
 };
 /* ---- durable draft storage: IndexedDB (large quota) with save status ---- */
 var idb=null;
@@ -524,7 +532,9 @@ window.addEventListener('beforeunload', function(e){ if(state.isAdmin && saveSta
 window.addEventListener('hashchange', function(){ if(isCabinet() && !state.isAdmin){ state.login=true; renderOverlays(); } });
 /* derived */
 function tagList(){ return ["All"].concat(state.data.settings.tags||[]); }
-function filtered(){ const w=(state.data.works||[]).slice().sort(function(a,b){ return (a.order||0)-(b.order||0); }); return state.tag==="All" ? w : w.filter(function(x){ return (x.tags||[]).indexOf(state.tag)>-1; }); }
+function seriesGroups(){ const works=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const series=(state.data.series||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const known={}; series.forEach(function(x){known[x.id]=1;}); const out=[]; series.forEach(function(se){ const items=works.filter(function(w){return w.seriesId===se.id;}); if(!items.length) return; const cover=(se.coverWorkId && items.filter(function(w){return w.id===se.coverWorkId;})[0]) || items[0]; out.push({se:se,items:items,cover:cover}); }); const orphan=works.filter(function(w){return !w.seriesId || !known[w.seriesId];}); if(orphan.length) out.push({se:{id:"__other",name:"Other",year:""},items:orphan,cover:orphan[0]}); return out; }
+function worksInSeries(sid){ const works=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); if(sid==="__other"){ const known={}; (state.data.series||[]).forEach(function(x){known[x.id]=1;}); return works.filter(function(w){return !w.seriesId || !known[w.seriesId];}); } return works.filter(function(w){return w.seriesId===sid;}); }
+function filtered(){ return state.openSeries ? worksInSeries(state.openSeries) : []; }
 /* ===== render: public ===== */
 function renderApp(){
   applyTheme();
@@ -558,27 +568,20 @@ function renderApp(){
 }
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
-  const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const hid=(state.data.settings.theme&&state.data.settings.theme.heroWorkId)||""; const feat=(hid&&all.filter(function(w){return w.id===hid;})[0])||all[0];
+  const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const hid=(state.data.settings.theme&&state.data.settings.theme.heroWorkId)||''; const feat=(hid&&all.filter(function(w){return w.id===hid;})[0])||all[0];
+  function wcard(w,i){ const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':''; return '<figure class="card'+(st==='sold'?' is-sold':'')+'" data-act="open" data-i="'+i+'" style="animation-delay:'+(i*40)+'ms">'+'<div class="card-img">'+badge+'<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc([w.title,materialLine(w)].filter(Boolean).join(", "))+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+'<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div><div class="cm">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div>'+(w.price?'<div class="cprice'+(st==='sold'?' sold':'')+'">'+esc(w.price)+'</div>':'')+'</figcaption></figure>'; }
+  if(state.openSeries){
+    const g=seriesGroups().filter(function(x){return x.se.id===state.openSeries;})[0]; const items=worksInSeries(state.openSeries); const nm=g?g.se.name:''; const yr=g?g.se.year:'';
+    let h='<div class="series-head"><button class="series-back" data-act="series-back">'+ic("cl",15)+' All series</button><h2 class="series-title">'+esc(nm||'')+'</h2>'+(yr?'<div class="series-year">'+esc(yr)+'</div>':'')+'</div>';
+    if(!items.length) return h+'<div class="empty"><div class="serif">Empty series</div></div>';
+    h+='<div class="grid">'; items.forEach(function(w,i){ h+=wcard(w,i); }); return h+'</div>';
+  }
   let h='';
   if(feat && feat.image){ h+='<section class="hero" data-act="hero-open"><div class="hero-media"><img src="'+esc(imgSrc(feat.image))+'" alt="'+esc(feat.title||state.data.settings.siteName)+'" /></div><div class="hero-scrim"></div><div class="hero-ov"><div class="hero-name">'+esc(state.data.settings.siteName)+'</div>'+(state.data.settings.subtitle?'<div class="hero-sub">'+esc(state.data.settings.subtitle)+'</div>':'')+'</div><div class="hero-cue">'+esc(lbl("work","Work"))+' \u2193</div></section>'; }
-  h+='<div class="sec-head" style="padding-top:40px"><div class="filters">';
-  var PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)"]; tagList().forEach(function(c,idx){ var col=(c==="All")?"var(--ink)":PAL[(idx-1)%5]; var on=state.tag===c; var st=on?("background:"+col+";border-color:"+col+";color:#fff"):("color:"+col+";border-color:"+col); h+='<button class="chip'+(on?" on":"")+'" data-act="tagf" data-c="'+esc(c)+'" style="'+st+'">'+esc(c)+'</button>'; });
-  h+='</div></div>';
-  const list=filtered();
-  if(!list.length){ return h+'<div class="empty"><div class="serif">Nothing here yet</div><p>'+(state.isAdmin?"Add your first piece from Manage \u2192 Works.":"New work is coming soon.")+'</p></div>'; }
-  const adminDrag = state.isAdmin && state.tag==="All";
-  if(state.isAdmin){ h+='<p class="hint" style="margin:-14px 0 14px">'+(adminDrag?"Admin: drag artworks to reorder \u2014 changes save automatically.":"Admin: switch to \u201cAll\u201d to reorder by dragging.")+'</p>'; }
-  h+='<div class="grid">';
-  list.forEach(function(w,i){
-    const da = adminDrag ? ' draggable="true" data-drag="works" data-drag-handle data-i="'+i+'"' : '';
-    const grip = adminDrag ? '<span class="card-grip">'+gripIcon(14)+'</span>' : '';
-    const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':'';
-    h+='<figure class="card'+(adminDrag?' can-drag':'')+(st==='sold'?' is-sold':'')+'" data-act="open" data-i="'+i+'"'+da+' style="animation-delay:'+(i*40)+'ms">'+grip+
-      '<div class="card-img">'+badge+'<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc([w.title,materialLine(w)].filter(Boolean).join(", "))+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+
-      '<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div>'+
-      '<div class="cm">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div>'+
-      (w.price?'<div class="cprice'+(st==='sold'?' sold':'')+'">'+esc(w.price)+'</div>':'')+'</figcaption></figure>';
-  });
+  const groups=seriesGroups();
+  if(!groups.length){ return h+'<div class="empty"><div class="serif">Nothing here yet</div><p>'+(state.isAdmin?"Add work and create a series from Manage.":"New work is coming soon.")+'</p></div>'; }
+  h+='<div class="sec-head" style="padding-top:40px"></div><div class="grid series-grid">';
+  groups.forEach(function(g,i){ const cov=g.cover; h+='<figure class="card scard" data-act="open-series" data-sid="'+esc(g.se.id)+'" style="animation-delay:'+(i*40)+'ms">'+'<div class="card-img">'+((cov&&cov.image)?'<img class="gimg" src="'+esc(imgSrc(cov.thumb||cov.image,"grid"))+'" alt="'+esc(g.se.name||'')+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((cov.w&&cov.h)?' style="aspect-ratio:'+cov.w+'/'+cov.h+'"':'')+' />':'')+'</div>'+'<figcaption class="cap"><div class="ct">'+esc(g.se.name||"Untitled series")+'</div><div class="cm">'+esc([g.se.year,(g.items.length+" works")].filter(Boolean).join(" \u00B7 "))+'</div></figcaption></figure>'; });
   return h+'</div>';
 }
 function cvBlock(title, rows){
@@ -678,7 +681,7 @@ function renderOverlays(){
 }
 /* ===== render: admin ===== */
 function renderPanel(){
-  const tabs=[["works","Works"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Commissions"],["orders","Orders"],["settings","Settings"]];
+  const tabs=[["works","Works"],["series","Series"],["tags","Tags"],["materials","Materials"],["about","About"],["contact","Contact"],["services","Commissions"],["orders","Orders"],["settings","Settings"]];
   let h='<div class="panel" role="dialog" aria-label="Manage site"><div class="panel-head"><h3>Manage site</h3>'+
     '<button class="iconbtn" data-act="panel-close">'+ic("x",16)+'</button></div><div class="tabs">';
   tabs.forEach(function(t){ h+='<button class="tab '+(state.panelTab===t[0]?"on":"")+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>'; });
@@ -691,6 +694,7 @@ function panelBody(){
   if(state.panelTab==="about") return tabAbout();
   if(state.panelTab==="contact") return tabContact();
   if(state.panelTab==="services") return tabServices();
+  if(state.panelTab==="series") return tabSeries();
   if(state.panelTab==="orders") return tabOrders();
   if(state.panelTab==="settings") return tabSettings();
   return "";
@@ -744,6 +748,7 @@ function tabBulkReview(){
     '<button class="btn ghost" data-act="bulk-cancel">Cancel</button></div>'+
     '<div class="fld"><span class="lab">Add tag to all</span>'+tagChipsFor([], "btag-all")+
     '<div class="cat-row"><input class="input" id="btag-new" placeholder="New tag for all" /><button class="btn mini" data-act="btag-alladd">'+ic("plus",13)+'</button></div></div>'+
+    '<div class="fld"><span class="lab">Add all to series</span><select class="input" id="bulk-series">'+((state.data.series||[]).length?(state.data.series||[]).map(function(se,idx){ return '<option value="'+esc(se.id)+'"'+(idx===0?' selected':'')+'>'+esc(se.name||"Untitled")+'</option>'; }).join(''):'<option value="">No series yet</option>')+'</select></div>'+
     '<p class="hint" style="margin:0 0 14px">Title is prefilled from the file name. Drag the handle to reorder. You can edit any work later.</p>';
   items.forEach(function(b,i){
     h+='<div class="admin-work" data-drag="bulk" data-i="'+i+'" style="align-items:flex-start"><span class="grip" draggable="true" data-drag-handle title="Drag to reorder" style="margin-top:16px">'+gripIcon(16)+'</span><img src="'+esc(b.image)+'" alt="" />'+
@@ -768,7 +773,7 @@ function saveBulk(){
   const items=state.bulk||[]; if(!items.length){ state.bulk=null; rerenderPanelBody(); return; }
   const works=state.data.works||(state.data.works=[]);
   let base=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0;
-  items.forEach(function(b,k){ works.push({id:b.id,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,status:(b.status||"available"),price:b.price||"",tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",thumbV:b.thumbV||0,w:b.w,h:b.h,order:base+k}); });
+  var _bsid=(document.getElementById("bulk-series")||{}).value||((state.data.series&&state.data.series[0])?state.data.series[0].id:""); items.forEach(function(b,k){ works.push({id:b.id,seriesId:_bsid,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,status:(b.status||"available"),price:b.price||"",tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",thumbV:b.thumbV||0,w:b.w,h:b.h,order:base+k}); });
   const n=items.length; state.bulk=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast(n+" works added");
 }
 function tabWorkEditor(){
@@ -794,6 +799,7 @@ function tabWorkEditor(){
       '<div style="flex:1">'+fld("Status",'<select class="input" data-bind="editing.status"><option value="available"'+((e.status||"available")==="available"?" selected":"")+'>For sale</option><option value="sold"'+(e.status==="sold"?" selected":"")+'>Sold</option></select>')+'</div>'+
       '<div style="flex:1">'+fld("Price",'<input class="input" data-bind="editing.price" value="'+esc(e.price||"")+'" placeholder="e.g. \u20AC450" />')+'</div>'+
     '</div>'+
+    '<div class="fld"><span class="lab">Series</span><select class="input" data-bind="editing.seriesId"><option value="">\u2014 No series \u2014</option>'+(state.data.series||[]).map(function(se){ return '<option value="'+esc(se.id)+'"'+((e.seriesId===se.id)?' selected':'')+'>'+esc(se.name||"Untitled")+'</option>'; }).join('')+'</select></div>'+
     '<div class="fld"><span class="lab">Tags</span>'+tagChipsFor(e.tags, "etag")+
       '<div class="cat-row"><input class="input" id="etag-new" placeholder="Add custom tag" /><button class="btn mini" data-act="etag-add">'+ic("plus",13)+'</button></div></div>'+
     '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn" data-act="work-save">'+ic("check",14)+' Save work</button>'+
@@ -856,6 +862,22 @@ function tabContact(){
     fld("Instagram URL",'<input class="input" data-bind="data.settings.contact.instagramUrl" value="'+esc(c.instagramUrl)+'" placeholder="https://instagram.com/username" />')+
     fld("Email",'<input class="input" data-bind="data.settings.contact.email" value="'+esc(c.email)+'" placeholder="vasily.yablokov@gmail.com" />')+
     '<button class="btn" data-act="save-close">'+ic("check",14)+' Save contact</button>';
+}
+function tabSeries(){
+  const series=(state.data.series||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
+  const works=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
+  let h='<p class="hint" style="margin:0 0 14px">Series = folders. Each has a name, year and cover. Put a work into a series in its editor (Works tab).</p>';
+  series.forEach(function(se,i){
+    const items=works.filter(function(w){return w.seriesId===se.id;});
+    let opts='<option value="">First work</option>'+items.map(function(w){ return '<option value="'+esc(w.id)+'"'+((se.coverWorkId===w.id)?' selected':'')+'>'+esc(w.title||"Untitled")+'</option>'; }).join('');
+    h+='<div style="border:1px solid var(--line);padding:12px;margin-bottom:10px">'+
+      '<div style="display:flex;gap:6px;margin-bottom:6px"><input class="input" data-bind="data.series.'+i+'.name" value="'+esc(se.name||"")+'" placeholder="Series name" /><input class="input" style="width:80px;flex:none" data-bind="data.series.'+i+'.year" value="'+esc(se.year||"")+'" placeholder="Year" /></div>'+
+      '<div class="fld" style="margin:0"><span class="lab">Cover</span><select class="input" data-bind="data.series.'+i+'.coverWorkId">'+opts+'</select></div>'+
+      '<div style="display:flex;gap:6px;margin-top:8px;align-items:center"><button class="btn ghost mini" data-act="series-up" data-i="'+i+'">\u2191</button><button class="btn ghost mini" data-act="series-down" data-i="'+i+'">\u2193</button><span style="flex:1"></span><span class="mono" style="font-size:11px;color:var(--graphite)">'+items.length+' works</span><button class="btn ghost mini" data-act="series-del" data-i="'+i+'">'+ic("trash",12)+' Delete</button></div>'+
+      '</div>';
+  });
+  h+='<button class="btn" data-act="series-add">'+ic("plus",13)+' Add series</button>';
+  return h;
 }
 function tabServices(){
   const sv=state.data.settings.services||{intro:"",items:[]};
@@ -968,12 +990,18 @@ document.addEventListener('click', function(e){
   const act=el.getAttribute('data-act');
   switch(act){
     case "home": state.view="work"; state.mobileNav=false; window.scrollTo(0,0); renderApp(); break;
-    case "go": state.view=el.getAttribute('data-v'); state.mobileNav=false; window.scrollTo(0,0); renderApp(); break;
+    case "go": state.view=el.getAttribute('data-v'); state.openSeries=null; state.mobileNav=false; window.scrollTo(0,0); renderApp(); break;
     case "burger": state.mobileNav=!state.mobileNav; renderApp(); break;
     case "tagf": state.tag=el.getAttribute('data-c'); renderApp(); break;
     case "open": state.lightbox=parseInt(el.getAttribute('data-i'),10); renderOverlays(); break;
+    case "open-series": { state.openSeries=el.getAttribute("data-sid"); window.scrollTo(0,0); renderApp(); break; }
+    case "series-back": { state.openSeries=null; window.scrollTo(0,0); renderApp(); break; }
+    case "series-add": { if(!Array.isArray(state.data.series)) state.data.series=[]; state.data.series.push({id:'s_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:"New series",year:"",coverWorkId:"",order:state.data.series.length}); saveDraft(); rerenderPanelBody(); break; }
+    case "series-del": { const i=parseInt(el.getAttribute("data-i"),10); const se=(state.data.series||[])[i]; if(se){ if(!confirm("Delete this series? Works stay but become ungrouped.")) break; (state.data.works||[]).forEach(function(w){ if(w.seriesId===se.id) w.seriesId=""; }); state.data.series.splice(i,1); saveDraft(); rerenderPanelBody(); } break; }
+    case "series-up": { const i=parseInt(el.getAttribute("data-i"),10); const a=(state.data.series||[]).slice().sort(function(x,y){return (x.order||0)-(y.order||0);}); if(i>0){ const t=a[i].order; a[i].order=a[i-1].order; a[i-1].order=t; saveDraft(); rerenderPanelBody(); } break; }
+    case "series-down": { const i=parseInt(el.getAttribute("data-i"),10); const a=(state.data.series||[]).slice().sort(function(x,y){return (x.order||0)-(y.order||0);}); if(i<a.length-1){ const t=a[i].order; a[i].order=a[i+1].order; a[i+1].order=t; saveDraft(); rerenderPanelBody(); } break; }
     case "lb-zoom": { el.classList.toggle("zoomed"); break; }
-    case "hero-open": { state.tag="All"; state.lightbox=0; renderApp(); renderOverlays(); break; }
+    case "hero-open": { const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const hid=(state.data.settings.theme&&state.data.settings.theme.heroWorkId)||""; const fw=(hid&&all.filter(function(w){return w.id===hid;})[0])||all[0]; if(!fw) break; const known={}; (state.data.series||[]).forEach(function(x){known[x.id]=1;}); const sid=(fw.seriesId&&known[fw.seriesId])?fw.seriesId:"__other"; state.openSeries=sid; const items=worksInSeries(sid); var idx=0; for(var k=0;k<items.length;k++){ if(items[k].id===fw.id){ idx=k; break; } } state.lightbox=idx; renderApp(); renderOverlays(); break; }
     case "lb-close": state.lightbox=null; renderOverlays(); break;
     case "lb-prev": { const n=filtered().length; state.lightbox=(state.lightbox-1+n)%n; updateLightbox(); break; }
     case "lb-next": { const n=filtered().length; state.lightbox=(state.lightbox+1)%n; updateLightbox(); break; }
@@ -989,7 +1017,7 @@ document.addEventListener('click', function(e){
     case "publish-close": state.publish=false; renderOverlays(); break;
     case "import": importData(); break;
     case "reset-pub": resetToPublished(); break;
-    case "work-new": state.editing={id:uid(),title:"",medium:"",support:"",height:50,width:70,year:"",status:"available",price:"",tags:[],image:"",order:null,_new:true}; rerenderPanelBody(); break;
+    case "work-new": state.editing={id:uid(),title:"",medium:"",support:"",height:50,width:70,year:"",status:"available",price:"",seriesId:((state.data.series&&state.data.series[0])?state.data.series[0].id:""),tags:[],image:"",order:null,_new:true}; rerenderPanelBody(); break;
     case "work-edit": { const w=(state.data.works||[]).find(function(x){return x.id===el.getAttribute('data-id');}); if(w){ state.editing=JSON.parse(JSON.stringify(w)); if(!Array.isArray(state.editing.tags)) state.editing.tags=[]; rerenderPanelBody(); } break; }
     case "work-cancel": state.editing=null; rerenderPanelBody(); break;
     case "work-save": saveWork(); break;
@@ -1059,7 +1087,7 @@ document.addEventListener('keydown', function(e){ if(state.lightbox===null) retu
 function saveWork(){
   const e=state.editing; if(!e) return; if(!e.image){ alert("Add an image first."); return; }
   const works=state.data.works||(state.data.works=[]);
-  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,status:(e.status||"available"),price:e.price||"",tags:(e.tags||[]).slice(),image:e.image,thumb:e.thumb||"",thumbV:e.thumbV||0,w:e.w,h:e.h};
+  const clean={id:e.id,title:e.title,medium:e.medium,support:e.support||"",height:(e.height===""?"":e.height),width:(e.width===""?"":e.width),year:e.year,status:(e.status||"available"),price:e.price||"",seriesId:e.seriesId||"",tags:(e.tags||[]).slice(),image:e.image,thumb:e.thumb||"",thumbV:e.thumbV||0,w:e.w,h:e.h};
   const idx=works.findIndex(function(x){return x.id===e.id;});
   if(idx>-1){ clean.order=works[idx].order; works[idx]=clean; } else { clean.order=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0; works.push(clean); }
   state.editing=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast("Work saved");
