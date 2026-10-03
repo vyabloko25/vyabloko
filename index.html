@@ -125,9 +125,9 @@ img{ max-width:100%; }
 .lb-x{ position:absolute; top:20px; right:22px; color:#fff; background:transparent; border:1px solid rgba(255,255,255,.3); width:42px; height:42px; display:flex; align-items:center; justify-content:center; }
 .lb-nav{ position:absolute; top:50%; transform:translateY(-50%); color:#fff; background:transparent; border:1px solid rgba(255,255,255,.25); width:46px; height:46px; display:flex; align-items:center; justify-content:center; transition:background .2s; }
 .lb-nav:hover{ background:rgba(255,255,255,.12); }
-.lb-prev{ left:22px; } .lb-next{ right:22px; }
+.lb-prev{ left:30px; } .lb-next{ right:30px; }
 .scrim{ position:fixed; inset:0; z-index:70; background:rgba(20,21,23,.5); animation:fade .2s ease; }
-.modal{ position:fixed; z-index:71; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--paper); border:1px solid var(--ink); width:min(420px,92vw); padding:30px; }
+.modal{ position:fixed; z-index:71; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--paper); border:1px solid var(--ink); width:min(480px,94vw); max-height:90vh; overflow:auto; padding:28px; }
 .modal h3{ font-family:var(--font-display); font-weight:500; font-size:24px; margin:0 0 6px; }
 .modal p{ font-size:14px; color:var(--graphite); margin:0 0 20px; }
 .panel{ position:fixed; z-index:71; top:0; right:0; height:100%; width:min(560px,100vw); background:var(--paper); border-left:1px solid var(--ink); display:flex; flex-direction:column; animation:slide .3s cubic-bezier(.2,.7,.2,1); }
@@ -294,6 +294,8 @@ textarea.uline{ resize:vertical; min-height:72px; }
 .swchip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 8px; border:1px solid var(--line); border-radius:3px; background:var(--card); }
 .swchip button{ background:none; border:none; cursor:pointer; color:var(--graphite); font-size:15px; line-height:1; padding:0; }
 .swchip button:hover{ color:var(--accent); }
+.card.can-drag .card-grip{ pointer-events:auto; cursor:grab; display:flex; }
+.admin-work .wpos{ text-align:center; }
 </style>
 </head>
 <body>
@@ -573,7 +575,7 @@ function renderApp(){
 function navlink(v,label){ return '<a data-act="go" data-v="'+v+'" class="'+(state.view===v?"on":"")+'">'+label+'</a>'; }
 function viewWork(){
   const all=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);}); const hid=(state.data.settings.theme&&state.data.settings.theme.heroWorkId)||''; const feat=(hid&&all.filter(function(w){return w.id===hid;})[0])||all[0];
-  function wcard(w,i){ const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':''; return '<figure class="card'+(st==='sold'?' is-sold':'')+'" data-act="open" data-i="'+i+'" style="animation-delay:'+(i*40)+'ms">'+'<div class="card-img">'+badge+'<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc([w.title,materialLine(w)].filter(Boolean).join(", "))+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+'<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div><div class="cm">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div>'+(w.price?'<div class="cprice'+(st==='sold'?' sold':'')+'">'+esc(w.price)+'</div>':'')+'</figcaption></figure>'; }
+  function wcard(w,i){ const st=statusOf(w); const badge=st==='sold'?'<span class="badge">Sold</span>':''; var dg=state.isAdmin?(' data-drag="swork" data-i="'+i+'"'):''; var grip=state.isAdmin?('<span class="card-grip" draggable="true" data-drag-handle title="Drag to reorder">'+gripIcon(14)+'</span>'):''; return '<figure class="card'+(state.isAdmin?' can-drag':'')+(st==='sold'?' is-sold':'')+'" data-act="open" data-i="'+i+'"'+dg+' style="animation-delay:'+(i*40)+'ms">'+grip+'<div class="card-img">'+badge+'<img class="gimg" src="'+esc(imgSrc(((state.data.settings.theme&&state.data.settings.theme.imgResize)?w.image:(w.thumb||w.image)),"grid"))+'" alt="'+esc([w.title,materialLine(w)].filter(Boolean).join(", "))+'" loading="'+(i<12?"eager":"lazy")+'" decoding="async" onload="this.classList.add(&#39;ld&#39;)" onerror="this.classList.add(&#39;ld&#39;)"'+((w.w&&w.h)?' style="aspect-ratio:'+w.w+'/'+w.h+'"':'')+' /></div>'+'<figcaption class="cap"><div class="ct">'+esc(w.title||"Untitled")+'</div><div class="cm">'+esc([materialLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div>'+(w.price?'<div class="cprice'+(st==='sold'?' sold':'')+'">'+esc(w.price)+'</div>':'')+'</figcaption></figure>'; }
   if(state.openSeries){
     const g=seriesGroups().filter(function(x){return x.se.id===state.openSeries;})[0]; const items=worksInSeries(state.openSeries); const nm=g?g.se.name:''; const yr=g?g.se.year:'';
     let h='<div class="series-head"><button class="series-back" data-act="series-back">'+ic("cl",15)+' All series</button><h2 class="series-title">'+esc(nm||'')+'</h2>'+(yr?'<div class="series-year">'+esc(yr)+'</div>':'')+'</div>';
@@ -705,19 +707,21 @@ function panelBody(){
 }
 function rerenderPanelBody(){ const b=$("#pbody"); if(b) b.innerHTML=panelBody(); }
 function tabWorks(){
-  const list=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
   let h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">'+
     '<button class="btn accent" data-act="work-new">'+ic("plus",14)+' Add work</button>'+
     '<button class="btn ghost" data-act="bulk-pick">'+ic("upload",13)+' Add multiple</button>'+
     '<input type="file" id="bulkfile" accept="image/*" multiple style="display:none" /></div>';
-  if(!list.length) h+='<p class="mono" style="color:var(--graphite);font-size:13px">No works yet.</p>';
-  else h+='<p class="hint" style="margin:0 0 10px">Drag the handle to reorder.</p>';
-  list.forEach(function(w,i){
-    h+='<div class="admin-work" data-drag="works" data-i="'+i+'"><span class="grip" draggable="true" data-drag-handle title="Drag to reorder">'+gripIcon(16)+'</span><img src="'+esc(w.image)+'" alt="" />'+
-      '<div class="info"><div class="t">'+esc(w.title||"Untitled")+'</div><div class="m">'+esc([materialLine(w),sizeLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></div>'+
-      '<div class="acts">'+
-      '<button class="sq" data-act="work-move" data-id="'+w.id+'" data-dir="-1" '+(i===0?"disabled":"")+'>'+ic("up",14)+'</button>'+'<button class="sq" data-act="work-move" data-id="'+w.id+'" data-dir="1" '+(i===list.length-1?"disabled":"")+'>'+ic("down",14)+'</button>'+'<button class="sq" data-act="work-edit" data-id="'+w.id+'">'+ic("pencil",14)+'</button>'+
-      '<button class="sq" data-act="work-del" data-id="'+w.id+'">'+ic("trash",14)+'</button></div></div>';
+  const groups=seriesGroups();
+  if(!groups.length){ h+='<p class="mono" style="color:var(--graphite);font-size:13px">No works yet.</p>'; return h; }
+  h+='<p class="hint" style="margin:0 0 10px">Type a number to set order within a series. On the page, drag works to reorder.</p>';
+  groups.forEach(function(g){
+    h+='<div class="eyebrow" style="margin:16px 0 8px">'+esc(g.se.name||"Other")+(g.se.year?(' \u00B7 '+esc(g.se.year)):'')+'</div>';
+    g.items.forEach(function(w,i){
+      h+='<div class="admin-work"><input class="input wpos" type="number" min="1" value="'+(i+1)+'" data-act="work-pos" data-id="'+esc(w.id)+'" data-sid="'+esc(g.se.id)+'" style="width:52px;flex:none" title="Position in series" />'+
+        '<img src="'+esc(imgSrc(w.thumb||w.image))+'" alt="" />'+
+        '<div class="info"><div class="t">'+esc(w.title||"Untitled")+'</div><div class="m">'+esc([materialLine(w),sizeLine(w),w.year].filter(Boolean).join(" \u00B7 "))+'</div></div>'+
+        '<div class="acts"><button class="sq" data-act="work-edit" data-id="'+esc(w.id)+'">'+ic("pencil",14)+'</button><button class="sq" data-act="work-del" data-id="'+esc(w.id)+'">'+ic("trash",14)+'</button></div></div>';
+    });
   });
   return h;
 }
@@ -733,7 +737,7 @@ async function startBulk(files){
   async function worker(){
     while(idx<files.length){
       const i=idx++;
-      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],820,0.82); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, thumbV:THUMB_V, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", status:"available", price:"", tags:[] }; }
+      try{ const full=await compressImage(files[i],1600,0.82); const thumb=await compressImage(files[i],820,0.82); const fu=await uploadImage(full.dataUrl); const tu=await uploadImage(thumb.dataUrl); results[i]={ id:uid(), image:fu, thumb:tu, thumbV:THUMB_V, w:full.w, h:full.h, title:cleanName(files[i].name), medium:"", support:"", height:50, width:70, year:"", status:"available", price:"", seriesId:((state.data.series&&state.data.series[0])?state.data.series[0].id:""), tags:[] }; }
       catch(err){ results[i]=null; }
       done++; if(state.bulkLoading) state.bulkLoading.done=done; rerenderPanelBody();
     }
@@ -752,7 +756,7 @@ function tabBulkReview(){
     '<button class="btn ghost" data-act="bulk-cancel">Cancel</button></div>'+
     '<div class="fld"><span class="lab">Add tag to all</span>'+tagChipsFor([], "btag-all")+
     '<div class="cat-row"><input class="input" id="btag-new" placeholder="New tag for all" /><button class="btn mini" data-act="btag-alladd">'+ic("plus",13)+'</button></div></div>'+
-    '<div class="fld"><span class="lab">Add all to series</span><select class="input" id="bulk-series">'+((state.data.series||[]).length?(state.data.series||[]).map(function(se,idx){ return '<option value="'+esc(se.id)+'"'+(idx===0?' selected':'')+'>'+esc(se.name||"Untitled")+'</option>'; }).join(''):'<option value="">No series yet</option>')+'</select></div>'+
+    '<div class="fld"><span class="lab">Series for all</span><div style="display:flex;gap:6px"><select class="input" id="bulk-series">'+((state.data.series||[]).length?(state.data.series||[]).map(function(se,idx){ return '<option value="'+esc(se.id)+'"'+(idx===0?' selected':'')+'>'+esc(se.name||"Untitled")+'</option>'; }).join(''):'<option value="">No series yet</option>')+'</select><button class="btn mini" data-act="bulk-series-all">Apply</button></div></div>'+
     '<p class="hint" style="margin:0 0 14px">Title is prefilled from the file name. Drag the handle to reorder. You can edit any work later.</p>';
   items.forEach(function(b,i){
     h+='<div class="admin-work" data-drag="bulk" data-i="'+i+'" style="align-items:flex-start"><span class="grip" draggable="true" data-drag-handle title="Drag to reorder" style="margin-top:16px">'+gripIcon(16)+'</span><img src="'+esc(b.image)+'" alt="" />'+
@@ -767,6 +771,7 @@ function tabBulkReview(){
           '<span class="mono" style="color:var(--graphite);font-size:11px">cm</span>'+
           '<input class="input" style="width:66px;flex:none" data-bind="bulk.'+i+'.year" value="'+esc(b.year)+'" placeholder="Year" /></div>'+
         '<div style="display:flex;gap:6px"><select class="input" data-bind="bulk.'+i+'.status"><option value="available"'+((b.status||"available")==="available"?" selected":"")+'>For sale</option><option value="sold"'+(b.status==="sold"?" selected":"")+'>Sold</option></select><input class="input" data-bind="bulk.'+i+'.price" value="'+esc(b.price||"")+'" placeholder="Price" style="flex:1" /></div>'+
+        '<select class="input" data-bind="bulk.'+i+'.seriesId"><option value="">\u2014 No series \u2014</option>'+(state.data.series||[]).map(function(se){ return '<option value="'+esc(se.id)+'"'+((b.seriesId===se.id)?' selected':'')+'>'+esc(se.name||"Untitled")+'</option>'; }).join('')+'</select>'+
         tagChipsFor(b.tags, "btag", 'data-i="'+i+'"')+
       '</div>'+
       '<div class="acts"><button class="sq" data-act="bulk-remove" data-i="'+i+'" title="Remove">'+ic("trash",14)+'</button></div></div>';
@@ -777,7 +782,7 @@ function saveBulk(){
   const items=state.bulk||[]; if(!items.length){ state.bulk=null; rerenderPanelBody(); return; }
   const works=state.data.works||(state.data.works=[]);
   let base=works.length?Math.max.apply(null,works.map(function(x){return x.order||0;}))+1:0;
-  var _bsid=(document.getElementById("bulk-series")||{}).value||((state.data.series&&state.data.series[0])?state.data.series[0].id:""); items.forEach(function(b,k){ works.push({id:b.id,seriesId:_bsid,title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,status:(b.status||"available"),price:b.price||"",tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",thumbV:b.thumbV||0,w:b.w,h:b.h,order:base+k}); });
+  items.forEach(function(b,k){ works.push({id:b.id,seriesId:(b.seriesId||((state.data.series&&state.data.series[0])?state.data.series[0].id:"")),title:b.title,medium:b.medium,support:b.support||"",height:(b.height===""?"":b.height),width:(b.width===""?"":b.width),year:b.year,status:(b.status||"available"),price:b.price||"",tags:(b.tags||[]).slice(),image:b.image,thumb:b.thumb||"",thumbV:b.thumbV||0,w:b.w,h:b.h,order:base+k}); });
   const n=items.length; state.bulk=null; saveDraft(); rerenderPanelBody(); renderAppKeepPanel(); toast(n+" works added");
 }
 function tabWorkEditor(){
@@ -972,6 +977,10 @@ function tabSettings(){
     '<div style="border-top:1px solid var(--line);margin:28px 0 20px"></div>'+
 
     '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
+    '<div class="eyebrow" style="margin-bottom:12px">Portfolio</div>'+
+    '<button class="btn ghost" data-act="export-pdf">'+ic("download",13)+' Export portfolio (PDF)</button>'+
+    '<p class="hint" style="margin:8px 0 0">Downloads a PDF of your works, grouped by series.</p>'+
+    '<div style="border-top:1px solid var(--line);margin:24px 0 18px"></div>'+
     '<div class="eyebrow" style="margin-bottom:12px">Change password</div>'+
     fld("Current password",'<input class="input" id="pw-old" type="password" autocomplete="off" />')+
     fld("New password",'<input class="input" id="pw-new" type="password" autocomplete="off" />')+
@@ -1004,6 +1013,7 @@ document.addEventListener('click', function(e){
     case "open-series": { state.openSeries=el.getAttribute("data-sid"); window.scrollTo(0,0); renderApp(); break; }
     case "series-back": { state.openSeries=null; window.scrollTo(0,0); renderApp(); break; }
     case "series-add": { if(!Array.isArray(state.data.series)) state.data.series=[]; state.data.series.push({id:'s_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:"New series",year:"",coverWorkId:"",order:state.data.series.length}); saveDraft(); rerenderPanelBody(); break; }
+    case "bulk-series-all": { const v=(document.getElementById("bulk-series")||{}).value||""; (state.bulk||[]).forEach(function(b){ b.seriesId=v; }); rerenderPanelBody(); break; }
     case "series-add-work": { const sid=el.getAttribute("data-sid"); const sel=document.getElementById("seradd-"+sid); const wid=sel&&sel.value; if(wid){ const w=(state.data.works||[]).filter(function(x){return x.id===wid;})[0]; if(w){ w.seriesId=sid; saveDraft(); rerenderPanelBody(); } } break; }
     case "series-remove-work": { const wid=el.getAttribute("data-wid"); const w=(state.data.works||[]).filter(function(x){return x.id===wid;})[0]; if(w){ w.seriesId=""; saveDraft(); rerenderPanelBody(); } break; }
     case "series-del": { const i=parseInt(el.getAttribute("data-i"),10); const se=(state.data.series||[])[i]; if(se){ if(!confirm("Delete this series? Works stay but become ungrouped.")) break; (state.data.works||[]).forEach(function(w){ if(w.seriesId===se.id) w.seriesId=""; }); state.data.series.splice(i,1); saveDraft(); rerenderPanelBody(); } break; }
@@ -1071,6 +1081,7 @@ document.addEventListener('click', function(e){
     case "sv-add": { if(!state.data.settings.services) state.data.settings.services={intro:"",items:[]}; state.data.settings.services.items.push({title:"",text:""}); saveDraft(); rerenderPanelBody(); break; }
     case "sv-del": { const i=parseInt(el.getAttribute("data-i"),10); state.data.settings.services.items.splice(i,1); saveDraft(); rerenderPanelBody(); break; }
     case "order-del": { const id=el.getAttribute("data-id"); apiSend("/api/orders?id="+encodeURIComponent(id),"DELETE"); state.orders=(state.orders||[]).filter(function(o){return o.id!==id;}); rerenderPanelBody(); break; }
+    case "export-pdf": { generatePDF(); break; }
     case "pw-save": { const o=(document.getElementById("pw-old")||{}).value||""; const n=(document.getElementById("pw-new")||{}).value||""; if(n.length<4){ alert("New password too short (min 4)."); break; } apiSend("/api/password","POST",{oldPassword:o,newPassword:n}).then(async function(r){ if(r.ok){ toast("Password changed"); const oe=document.getElementById("pw-old"),ne=document.getElementById("pw-new"); if(oe)oe.value=""; if(ne)ne.value=""; } else { const j=await r.json().catch(function(){return{};}); alert(j.error||"Could not change password."); } }).catch(function(){ alert("Could not change password."); }); break; }
     case "pw-change": { const p=$("#newpw"); if(p && p.value.trim()){ lsSet(LS_PW,p.value.trim()); p.value=""; toast("Password changed"); } break; }
   }
@@ -1133,7 +1144,10 @@ function doReorder(kind, from, to){
     const sorted=(state.data.works||[]).slice().sort(function(a,b){return (a.order||0)-(b.order||0);});
     arrMove(sorted, from, to); sorted.forEach(function(w,idx){ w.order=idx; }); saveDraft(); if(state.panelOpen) rerenderPanelBody(); else renderApp();
   }
+  else if(kind==='swork'){ reorderInSeries(state.openSeries, from, to); }
 }
+function reorderInSeries(sid, from, to){ if(!sid) return; const items=worksInSeries(sid); if(from==null||to==null||from<0||to<0||from>=items.length||to>=items.length||from===to) return; const slots=items.map(function(w){return w.order;}); arrMove(items, from, to); items.forEach(function(w,idx){ w.order=slots[idx]; }); saveDraft(); renderApp(); }
+function setWorkPos(id, sid, pos){ const items=worksInSeries(sid); const slots=items.map(function(w){return w.order;}); var cur=-1; for(var k=0;k<items.length;k++){ if(items[k].id===id){cur=k;break;} } if(cur<0) return; pos=parseInt(pos,10); if(isNaN(pos)) return; pos=Math.max(1,Math.min(items.length,pos)); const moved=items.splice(cur,1)[0]; items.splice(pos-1,0,moved); items.forEach(function(w,idx){ w.order=slots[idx]; }); saveDraft(); rerenderPanelBody(); }
 document.addEventListener('dragstart', function(e){
   const handle=e.target.closest && e.target.closest('[data-drag-handle]'); if(!handle) return;
   const row=handle.closest('[data-drag]'); if(!row) return;
@@ -1156,8 +1170,37 @@ document.addEventListener('drop', function(e){
   doReorder(kind, from, to);
 });
 document.addEventListener('dragend', function(){ dragFrom=null; dragKind=null; clearDropMarks(); const dg=document.querySelectorAll('.dragging'); for(var i=0;i<dg.length;i++) dg[i].classList.remove('dragging'); });
+document.addEventListener('change', function(e){ const el=e.target; if(el&&el.getAttribute&&el.getAttribute('data-act')==='work-pos'){ setWorkPos(el.getAttribute('data-id'), el.getAttribute('data-sid'), el.value); } });
 document.addEventListener('keydown', function(e){ const el=e.target; if(el&&el.getAttribute&&el.getAttribute('data-edit')&&!el.getAttribute('data-multi')&&e.key==='Enter'){ e.preventDefault(); el.blur(); } });
 document.addEventListener('paste', function(e){ const el=e.target; if(el&&el.getAttribute&&el.getAttribute('data-edit')){ e.preventDefault(); const t=((e.clipboardData||window.clipboardData).getData('text')||''); document.execCommand('insertText', false, t); } });
+async function loadJsPDF(){ if(window.jspdf&&window.jspdf.jsPDF) return window.jspdf.jsPDF; await new Promise(function(res,rej){ var sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); return window.jspdf.jsPDF; }
+async function workImageData(src, cap){ try{ const im=await loadImageEl(src); var w=im.naturalWidth||im.width, h=im.naturalHeight||im.height; var sc=Math.min(1,(cap||1400)/Math.max(w,h)); var cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc)); var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; cv.getContext('2d').drawImage(im,0,0,cw,ch); return {data:cv.toDataURL('image/jpeg',0.85), w:cw, h:ch}; }catch(e){ return null; } }
+async function generatePDF(){
+  toast("Building PDF\u2026");
+  var JS; try{ JS=await loadJsPDF(); }catch(e){ alert("Could not load the PDF library (check your connection)."); return; }
+  try{
+    var doc=new JS({unit:'mm',format:'a4'}); var PW=210, PH=297, M=16; var s=state.data.settings;
+    doc.setFont('helvetica','bold'); doc.setFontSize(30); doc.text(String(s.siteName||'Portfolio').toUpperCase(), M, 42);
+    if(s.subtitle){ doc.setFont('helvetica','normal'); doc.setFontSize(12); doc.setTextColor(90); doc.text(String(s.subtitle), M, 52); doc.setTextColor(0); }
+    var groups=seriesGroups();
+    for(var gi=0; gi<groups.length; gi++){ var g=groups[gi];
+      for(var ii=0; ii<g.items.length; ii++){ var w=g.items[ii];
+        doc.addPage();
+        var img=await workImageData(w.image,1400); var capH=34; var availW=PW-2*M, availH=PH-2*M-capH;
+        if(img){ var r=Math.min(availW/img.w, availH/img.h); var dw=img.w*r, dh=img.h*r; doc.addImage(img.data,'JPEG',(PW-dw)/2, M, dw, dh); }
+        var cy=PH-M-capH+10;
+        doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(120); doc.text(String((g.se.name||'')+(g.se.year?(' \u00B7 '+g.se.year):'')), M, cy);
+        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(0); doc.text(String(w.title||'Untitled'), M, cy+7);
+        var meta=[materialLine(w), sizeLine(w), w.year].filter(Boolean).join('   \u00B7   ');
+        doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(80); if(meta) doc.text(meta, M, cy+13);
+        var pr=[(statusOf(w)==='sold'?'Sold':''), w.price].filter(Boolean).join('   \u00B7   '); if(pr) doc.text(pr, M, cy+19);
+        doc.setTextColor(0);
+      }
+    }
+    doc.save(String(s.siteName||'portfolio').replace(/\s+/g,'-').toLowerCase()+'-portfolio.pdf');
+    toast("PDF ready");
+  }catch(e){ alert("PDF failed: "+(e&&e.message||e)); }
+}
 boot();
 </script>
 </body>
